@@ -659,11 +659,55 @@
   .placeholder-t{ font-size:15px; color:#9a9a9a; letter-spacing:2px; }
   .placeholder-s{ font-size:11.5px; color:#4a4a4a; margin-top:10px; letter-spacing:1px; line-height:1.8; }
   @media (max-width: 400px){ .app-icon, .dock, .key, .avatar, .bankcard{ backdrop-filter:none !important; } }
+
+  /* ---------- 进入界面 ---------- */
+  #welcome{
+    position:absolute; inset:0; z-index:300;
+    display:flex; align-items:center; justify-content:center; padding:30px;
+    background:radial-gradient(ellipse 120% 75% at 50% 0%, rgba(62,62,74,.35), rgba(0,0,0,0) 62%), #000;
+    transition:opacity .55s ease, visibility .55s;
+  }
+  #welcome.hidden{ opacity:0; visibility:hidden; pointer-events:none; }
+  #welcome.shake{ animation:shake .5s cubic-bezier(.36,.07,.19,.97); }
+  .wc-inner{ width:100%; max-width:330px; text-align:center; }
+  .wc-kicker{ font-size:10px; letter-spacing:5px; color:rgba(200,185,143,.6); }
+  .wc-title{ margin-top:16px; font-size:33px; font-weight:200; letter-spacing:2.5px; color:#ededed; }
+  .wc-line{ width:36px; height:1px; background:rgba(200,185,143,.45); margin:22px auto 0; }
+  .wc-sub{ margin-top:20px; font-size:12.5px; line-height:2.1; color:#8c8c8c; letter-spacing:.6px; }
+  #wcInput{
+    margin-top:28px; width:100%; text-align:center; background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:14px 16px;
+    color:#eee; font-size:15px; letter-spacing:2px; outline:none; transition:.25s; font-family:inherit;
+  }
+  #wcInput::placeholder{ color:#5a5a5a; letter-spacing:1px; }
+  #wcInput:focus{ border-color:rgba(200,185,143,.45); background:rgba(255,255,255,.08); }
+  .wc-btn{
+    margin-top:14px; padding:13px; border-radius:16px; cursor:pointer; user-select:none;
+    background:linear-gradient(150deg, rgba(200,185,143,.26), rgba(200,185,143,.09));
+    border:1px solid rgba(200,185,143,.34); color:#efe6d2; font-size:14px; letter-spacing:3px;
+    transition:.18s;
+  }
+  .wc-btn:active{ transform:scale(.98); background:rgba(200,185,143,.3); }
+  .wc-hint{ margin-top:18px; font-size:10.5px; color:#464646; letter-spacing:.7px; line-height:1.9; }
 </style>
 </head>
 <body>
 
 <div id="phone">
+
+  <!-- ===== 进入界面：输入女主角名字 ===== -->
+  <div id="welcome">
+    <div class="wc-inner">
+      <div class="wc-kicker">PRIVATE TERMINAL</div>
+      <div class="wc-title">Julian Ho</div>
+      <div class="wc-line"></div>
+      <div class="wc-sub">在进入之前，先告诉我你的名字。<br>从这一刻起，这个终端里的「她」就是你。</div>
+      <input id="wcInput" type="text" maxlength="12" placeholder="输入你的名字" autocomplete="off" spellcheck="false">
+      <div class="wc-btn" id="wcBtn">进 入 终 端</div>
+      <div class="wc-hint">名字会替换页面中所有关于女主角的称呼</div>
+    </div>
+  </div>
+
   <!-- 远程拦截 -->
   <div id="intercept">
     <div class="ic-top">
@@ -2486,6 +2530,86 @@ function renderChatBody(key){
   }).join('');
   setTimeout(() => { body.scrollTop = body.scrollHeight; }, 60);
 }
+/* =========================================================
+   进入界面 · 女主角名字
+   ========================================================= */
+(function(){
+  var KEY = 'julian_heroine_name';
+  var ALIASES = ['江晏寧', '晏寧', '晏宁', '阿寧', '阿宁', 'Y/N'];
+  var wrap = document.getElementById('welcome');
+  var input = document.getElementById('wcInput');
+  var btn = document.getElementById('wcBtn');
+  if (!wrap || !input || !btn) return;
+
+  var saved = '';
+  try { saved = localStorage.getItem(KEY) || ''; } catch (e) {}
+  if (saved) input.value = saved;
+
+  function isSkipped(node){
+    var p = node.parentElement;
+    return !p || /^(SCRIPT|STYLE|TEXTAREA)$/.test(p.tagName);
+  }
+
+  function applyName(raw){
+    var n = String(raw || '').replace(/\s+/g, ' ').trim();
+    if (!n) return false;
+
+    // 1) 所有文本节点
+    var walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null);
+    var nodes = [], node;
+    while ((node = walker.nextNode())) nodes.push(node);
+    nodes.forEach(function(nd){
+      if (isSkipped(nd)) return;
+      var s = nd.nodeValue;
+      if (!s || !s.trim()) return;
+      for (var i = 0; i < ALIASES.length; i++) {
+        if (s.indexOf(ALIASES[i]) >= 0) s = s.split(ALIASES[i]).join(n);
+      }
+      if (s !== nd.nodeValue) nd.nodeValue = s;
+    });
+
+    // 2) 头像里的单字（宁）
+    var avs = document.querySelectorAll('.avatar, .moment-av, .msg-av, .ig-avatar, .ig-post-av, .profile-av');
+    Array.prototype.forEach.call(avs, function(el){
+      var t = (el.textContent || '').trim();
+      if (t === '宁' || t === '寧') el.textContent = n.charAt(0);
+    });
+
+    // 3) 数据层（聊天列表/会话是由 JS 渲染的）
+    if (typeof chats !== 'undefined' && chats && chats.jiang) {
+      chats.jiang.name = n;
+      chats.jiang.avatar = n.charAt(0);
+      try { renderChatList(); } catch (e) {}
+      if (document.getElementById('chat').classList.contains('active')) {
+        try {
+          document.getElementById('chatName').textContent = n;
+          renderChatBody('jiang');
+        } catch (e) {}
+      }
+    }
+
+    document.title = 'Julian Ho — Private · ' + n;
+    return true;
+  }
+
+  function enter(){
+    var v = input.value.trim();
+    if (!v) {
+      wrap.classList.remove('shake');
+      void wrap.offsetWidth;
+      wrap.classList.add('shake');
+      input.focus();
+      return;
+    }
+    try { localStorage.setItem(KEY, v); } catch (e) {}
+    applyName(v);
+    wrap.classList.add('hidden');
+    setTimeout(function(){ wrap.style.display = 'none'; }, 600);
+  }
+
+  btn.addEventListener('click', enter);
+  input.addEventListener('keydown', function(e){ if (e.key === 'Enter') enter(); });
+})();
 </script>
 </body>
 </html>
