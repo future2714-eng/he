@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>何氏私人财富终端 - 何瑞璋专属</title>
+<style>
+  /* ============ 全局与基础美化 ============ */
+  @import url('https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.1.0/style.css');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; -webkit-tap-highlight-color: transparent; }
+  body { background: #000; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; color: #fff; overflow-x: hidden; }
+  
+  .device {
+    width: 100%; max-width: 420px; min-height: 100vh;
+    background: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #050505 80%);
+    position: relative; display: flex; flex-direction: column; overflow-x: hidden;
+  }
+
+  /* ============ 状态栏 ============ */
+  .global-status-bar {
+    width: 100%; padding: 12px 25px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 11px; color: #777; position: absolute; top: 0; left: 0; z-index: 999; pointer-events: none;
+  }
+  .global-status-bar .status-item { display: flex; align-items: center; gap: 5px; }
+  .global-status-bar .lock-icon { color: #cba258; font-size: 12px; }
+
+  /* ============ 锁屏界面 ============ */
+  #lock-screen {
+    position: relative; width: 100%; min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 40px 20px; z-index: 100;
+  }
+  #lock-screen.hidden { display: none; }
+
+  .auth-zone { width: 100%; max-width: 300px; text-align: center; }
+  .face-id-icon { font-size: 60px; margin-bottom: 15px; transition: all 0.3s; }
+  .face-id-icon.scanning { animation: pulse-scan 1.5s infinite; }
+  .face-id-icon.success { color: #4ade80; filter: drop-shadow(0 0 20px rgba(74, 222, 128, 0.6)); }
+  .face-id-text { font-size: 14px; color: #888; letter-spacing: 2px; margin-bottom: 25px; }
+  
+  .fingerprint-zone { display: flex; flex-direction: column; align-items: center; opacity: 0.6; margin-bottom: 40px; cursor: pointer; }
+  .fingerprint-icon { font-size: 40px; margin-bottom: 5px; transition: all 0.3s; }
+  .fingerprint-text { font-size: 11px; color: #666; letter-spacing: 1px; }
+  .fingerprint-progress { width: 60px; height: 2px; background: #222; border-radius: 2px; margin-top: 10px; overflow: hidden; }
+  .fingerprint-progress-fill { width: 0%; height: 100%; background: #cba258; transition: width 0.1s linear; }
+  
+  .continue-btn {
+    font-size: 13px; color: #cba258; border: 1px solid #cba258; padding: 10px 35px;
+    border-radius: 20px; cursor: pointer; background: rgba(203,162,88,0.1); display: inline-block; margin-top: 20px;
+  }
+  .continue-btn.hidden { display: none; }
+
+  /* 密码区 */
+  .pwd-zone { display: none; width: 100%; flex-direction: column; align-items: center; padding-top: 20px; }
+  .pwd-zone.show { display: flex; }
+  .lock-title { font-family: 'Noto Serif SC', serif; font-size: 16px; letter-spacing: 4px; color: #cba258; margin-bottom: 30px; text-align: center; }
+
+  .password-dots { display: flex; gap: 22px; margin-bottom: 20px; justify-content: center; }
+  .dot { width: 14px; height: 14px; border-radius: 50%; border: 1.5px solid #444; transition: all 0.2s; }
+  .dot.filled { background: #cba258; border-color: #cba258; box-shadow: 0 0 12px rgba(203, 162, 88, 0.6); }
+  .dot.error { background: #ff2a2a; border-color: #ff2a2a; box-shadow: 0 0 12px rgba(255, 42, 42, 0.6); }
+
+  .pwd-security-hint { font-size: 10px; color: #555; margin-bottom: 20px; text-align: center; }
+
+  .keyboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; width: 100%; max-width: 260px; margin: 0 auto; justify-content: center; }
+  .key-btn {
+    background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 50%; width: 70px; height: 70px; display: flex; justify-content: center; align-items: center;
+    font-size: 24px; font-weight: 300; color: #fff; cursor: pointer; transition: all 0.15s; margin: 0 auto;
+  }
+  .key-btn:active { background: rgba(203, 162, 88, 0.15); border-color: #cba258; transform: scale(0.92); }
+  .key-btn.empty { background: transparent; border: none; pointer-events: none; }
+  .key-btn.del { font-size: 20px; }
+
+  /* ============ 弹窗 ============ */
+  .modal-mask {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: #050505; z-index: 9999;
+    display: none; justify-content: center; align-items: center; padding: 20px;
+  }
+  .modal-mask.show { display: flex; }
+
+  .error-box {
+    width: 100%; max-width: 320px; border: 2px solid #ff2a2a; border-radius: 16px;
+    padding: 35px 25px; text-align: center; background: #1a0000;
+    box-shadow: 0 0 50px rgba(255, 0, 0, 0.6);
+  }
+  .error-text { color: #ff2a2a; font-size: 18px; line-height: 1.6; white-space: pre-line; font-weight: bold; text-shadow: 0 0 10px rgba(255, 0, 0, 0.8); }
+
+  .warning-box {
+    width: 100%; max-width: 320px; border: 1px solid #ff2a2a; border-radius: 16px;
+    padding: 35px 25px; text-align: center; background: #0a0a0a;
+  }
+  .warning-text { color: #ff6b6b; font-size: 14px; line-height: 1.8; margin-bottom: 25px; }
+  .warning-btn { font-size: 13px; color: #fff; border: 1px solid #ff2a2a; padding: 10px 35px; border-radius: 20px; cursor: pointer; background: rgba(255,42,42,0.2); }
+  .warning-btn:active { background: rgba(255,42,42,0.5); }
+
+  .success-box {
+    width: 100%; max-width: 320px; border: 1px solid #cba258; border-radius: 16px;
+    padding: 35px 25px; text-align: center; background: #0a0a0a;
+  }
+  .success-text { color: #cba258; font-size: 17px; line-height: 1.6; }
+  .enter-btn { margin-top: 20px; font-size: 12px; color: #cba258; border: 1px solid #cba258; padding: 6px 20px; border-radius: 20px; display: inline-block; cursor: pointer; }
+
+  .copyright-box-red {
+    width: 100%; max-width: 320px; border: 2px solid #ff2a2a; 
+    border-radius: 16px; padding: 35px 25px; text-align: center; 
+    background: #1a0000; box-shadow: 0 0 50px rgba(255, 0, 0, 0.6);
+  }
+  .copyright-text-red {
+    color: #ff2a2a; font-size: 16px; line-height: 1.8; 
+    font-weight: bold; text-shadow: 0 0 10px rgba(255, 0, 0, 0.8);
+  }
+  .copyright-signature-yellow {
+    color: #cba258; font-weight: bold; margin-top: 15px;
+  }
+
+  /* ============ 加载界面 ============ */
+  #loading-screen {
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: #050505; z-index: 999; display: none; flex-direction: column;
+    justify-content: center; align-items: center;
+  }
+  #loading-screen.show { display: flex; }
+  .loading-text { font-size: 13px; color: #cba258; letter-spacing: 2px; margin-bottom: 20px; font-family: 'Courier New', monospace; }
+  .progress-bar-bg { width: 60%; max-width: 240px; height: 3px; background: #222; border-radius: 3px; overflow: hidden; }
+  .progress-bar-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #555, #cba258); transition: width 0.2s ease; }
+
+  /* ============ 资产仪表盘 ============ */
+  #dashboard {
+    display: none; flex-direction: column; width: 100%; min-height: 100vh; padding: 60px 20px 40px 20px;
+  }
+  #dashboard.show { display: flex; }
+
+  .page-container { display: none; flex-direction: column; width: 100%; }
+  .page-container.active { display: flex; }
+
+  .page-header { display: flex; align-items: center; margin-bottom: 25px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px; position: relative; }
+  .back-btn { position: absolute; left: 0; font-size: 14px; color: #cba258; padding: 6px 12px; border: 1px solid rgba(203,162,88,0.3); border-radius: 6px; cursor: pointer; }
+  .page-title-zone { flex: 1; text-align: center; padding: 0 60px; }
+  .page-title-zone h1 { font-family: 'Noto Serif SC', serif; font-size: 18px; color: #fff; margin-bottom: 6px; }
+  .page-title-zone .auth { font-size: 12px; color: #a0a0a0; }
+  .page-title-zone .auth span { color: #cba258; font-weight: bold; }
+
+  /* 总资产卡片 */
+  .total-card {
+    background: linear-gradient(135deg, rgba(203, 162, 88, 0.1) 0%, rgba(20,20,20,1) 40%, rgba(10,10,10,1) 100%);
+    border: 1px solid rgba(203, 162, 88, 0.2); border-radius: 14px; padding: 25px 20px; margin-bottom: 25px;
+    position: relative; overflow: hidden; cursor: pointer;
+  }
+  .total-card::after { content: ''; position: absolute; top: 0; right: 0; width: 4px; height: 100%; background: #cba258; }
+  .total-label { font-size: 11px; color: #888; letter-spacing: 2px; margin-bottom: 8px; }
+  .total-value { font-size: 20px; font-weight: 700; color: #fff; font-family: 'Courier New', monospace; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .total-cny { font-size: 12px; color: #cba258; margin-top: 6px; font-weight: 600; }
+  .total-hint { font-size: 11px; color: #666; margin-top: 10px; }
+  .floating-profit { position: absolute; top: 15px; right: 25px; font-size: 12px; color: #4ade80; font-family: 'Courier New', monospace; font-weight: bold; opacity: 0; transition: opacity 0.3s; }
+  .floating-profit.show { opacity: 1; animation: floatUp 0.8s ease-out; }
+  @keyframes floatUp { 0% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-20px); } }
+
+  /* 环形图 */
+  .chart-container { display: flex; align-items: center; justify-content: center; gap: 15px; background: rgba(255,255,255,0.02); border: 1px solid #1a1a1a; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+  .donut-chart { width: 100px; height: 100px; border-radius: 50%; 
+    background: conic-gradient(#cba258 0% 55%, #4ade80 55% 70%, #7baaf7 70% 75%, #ff6b6b 75% 78%, #a78bfa 78% 82%, #9ca3af 82% 100%); 
+    position: relative; flex-shrink: 0; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+  .donut-chart::after { content: ''; position: absolute; top: 15%; left: 15%; width: 70%; height: 70%; border-radius: 50%; background: #0a0a0a; }
+  .chart-legend { display: flex; flex-direction: column; gap: 6px; font-size: 10px; color: #ccc; }
+  .chart-legend .legend-item { display: flex; align-items: center; gap: 6px; }
+  .chart-legend .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .dot.deposit { background: #cba258; } .dot.equity { background: #4ade80; } .dot.fixed { background: #7baaf7; } .dot.collection { background: #ff6b6b; } .dot.vehicles { background: #a78bfa; } .dot.other { background: #9ca3af; }
+
+  /* 分类卡片 */
+  .group-card { background: rgba(255,255,255,0.02); border: 1px solid #1a1a1a; border-radius: 12px; margin-bottom: 12px; cursor: pointer; }
+  .group-card:active { background: rgba(203, 162, 88, 0.05); }
+  .group-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; }
+  .group-title { font-size: 15px; font-weight: 600; color: #cba258; display: flex; align-items: center; gap: 8px; }
+  .group-icon { font-size: 14px; color: #666; }
+
+  /* 子项列表 */
+  .sub-list { display: flex; flex-direction: column; gap: 15px; }
+  .sub-item { padding: 15px 0; border-bottom: 1px dashed #1a1a1a; cursor: pointer; position: relative; }
+  .sub-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .sub-item .row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .sub-item .name { font-size: 14px; font-weight: 500; color: #e0e0e0; display: flex; align-items: center; gap: 6px; }
+  .sub-item .name .click-hint { font-size: 10px; color: #cba258; border: 1px solid #cba258; padding: 1px 4px; border-radius: 3px; margin-left: 5px; }
+  .sub-item .name .red-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff2a2a; display: inline-block; }
+  .sub-item .val { font-size: 15px; font-weight: 600; color: #cba258; font-family: 'Courier New', monospace; white-space: nowrap; }
+  .sub-item .desc { font-size: 11px; color: #666; margin-bottom: 6px; }
+  .sub-item .cny { font-size: 11px; color: #4ade80; font-family: 'Courier New', monospace; }
+  .sub-item .detail-note { font-size: 11px; color: #ff6b6b; margin-top: 5px; font-weight: bold; }
+
+  /* 折叠流水 */
+  .detail-box { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; background: #0a0a0a; border-radius: 8px; }
+  .detail-box.show { max-height: 800px; margin-top: 10px; padding: 10px; border: 1px solid #1a1a1a; }
+  .flow-item { display: flex; justify-content: space-between; align-items: center; font-size: 11px; padding-bottom: 6px; border-bottom: 1px dashed #222; }
+  .flow-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .flow-info { display: flex; flex-direction: column; gap: 2px; }
+  .flow-info .target { color: #aaa; }
+  .flow-info .time { color: #444; font-size: 10px; }
+  .flow-amount { text-align: right; }
+  .flow-amount .money { font-family: 'Courier New', monospace; font-size: 12px; }
+  .flow-amount .money.in { color: #4ade80; } .flow-amount .money.out { color: #ff6b6b; }
+
+  /* 情感卡片 */
+  .sub-item.priceless { border-left: 2px solid #cba258; padding-left: 15px; background: rgba(203,162,88,0.02); }
+  .sub-item.priceless .name { color: #cba258; }
+  .sub-item.debt { border-left: 2px solid #ff2a2a; padding-left: 15px; background: rgba(255,42,42,0.02); }
+  .sub-item.debt .name { color: #ff6b6b; }
+  .sub-item.debt.strikethrough { text-decoration: line-through; opacity: 0.5; }
+
+  /* 实时盈利 */
+  .live-profit { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px dashed #1a1a1a; position: relative; }
+  .live-profit .name { font-size: 14px; color: #cba258; }
+  .live-profit .val { font-size: 15px; color: #4ade80; font-family: 'Courier New', monospace; white-space: nowrap; }
+  .live-profit-floating { position: absolute; top: 5px; right: 0; font-size: 11px; color: #4ade80; font-family: 'Courier New', monospace; font-weight: bold; opacity: 0; }
+  .live-profit-floating.show { animation: floatUp 0.8s ease-out; }
+
+  /* 总价值卡片 */
+  .total-asset-card { margin-top: 25px; padding: 25px 20px; text-align: center; background: rgba(203, 162, 88, 0.05); border: 1px solid rgba(203, 162, 88, 0.2); border-radius: 14px; cursor: pointer; }
+  .total-asset-label { font-size: 12px; color: #888; letter-spacing: 2px; margin-bottom: 10px; }
+  .total-asset-value { font-size: 20px; font-weight: 700; color: #cba258; font-family: 'Courier New', monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .total-asset-hint { font-size: 11px; color: #666; margin-top: 10px; }
+
+  /* 手写留言 */
+  .love-letter { margin-top: 30px; margin-bottom: 50px; padding: 30px 20px; text-align: center; background: linear-gradient(135deg, rgba(203, 162, 88, 0.08) 0%, transparent 100%); border: 1px solid rgba(203, 162, 88, 0.15); border-radius: 14px; }
+  .love-letter .text { 
+    font-family: 'LXGW WenKai Screen', 'KaiTi', 'STKaiti', cursive, sans-serif; 
+    color: #cba258; font-size: 16px; line-height: 2.2; 
+  }
+  .love-letter .signature { 
+    margin-top: 20px; color: #cba258; font-weight: bold; font-size: 15px; text-align: right; 
+    font-family: 'LXGW WenKai Screen', 'KaiTi', 'STKaiti', cursive, serif; 
+  }
+
+  /* 分享按钮 */
+  .share-btn { position: fixed; bottom: 30px; right: 25px; width: 45px; height: 45px; border-radius: 50%; background: rgba(203, 162, 88, 0.8); border: 1px solid #cba258; display: flex; justify-content: center; align-items: center; font-size: 20px; cursor: pointer; z-index: 99; color: #fff; }
+  .share-btn:active { transform: scale(0.9); }
+
+  @keyframes shake { 10%, 90% { transform: translate3d(-5px, 0, 0); } 20%, 80% { transform: translate3d(7px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-10px, 0, 0); } 40%, 60% { transform: translate3d(10px, 0, 0); } }
+  @keyframes pulse-scan { 0% { opacity: 0.6; } 50% { opacity: 1; transform: scale(1.05); } 100% { opacity: 0.6; } }
+</style>
+</head>
+<body>
+
+<div class="device">
+  
+  <div class="global-status-bar">
+    <div class="status-item"><span id="live-time">23:47</span></div>
+    <div class="status-item"><span class="lock-icon">🔒</span> 已加密 | 📍 香港</div>
+  </div>
+
+  <!-- 警告弹窗 -->
+  <div class="modal-mask show" id="warning-modal">
+    <div class="warning-box">
+      <div class="warning-text">
+        此文件为何家最高机密档案。<br>系统已启用人脸与指纹双重实时监控。<br>连续验证失败，将自动抓拍人像及定位，<br>并立即上报至何瑞璋先生私人终端。
+      </div>
+      <div class="warning-btn" id="warning-btn">我已知晓</div>
+    </div>
+  </div>
+
+  <!-- 锁屏界面 -->
+  <div id="lock-screen">
+    <div class="auth-zone" id="auth-zone">
+      <div class="face-id-icon scanning" id="face-id-icon">👤</div>
+      <div class="face-id-text" id="face-id-text">正在人脸认证...</div>
+      
+      <div class="fingerprint-zone" id="fingerprint-zone">
+        <div class="fingerprint-icon" id="fingerprint-icon">👆</div>
+        <div class="fingerprint-text" id="fingerprint-text">请先通过人脸认证</div>
+        <div class="fingerprint-progress"><div class="fingerprint-progress-fill" id="fingerprint-fill"></div></div>
+      </div>
+    </div>
+
+    <div class="pwd-zone" id="pwd-zone">
+      <div class="lock-title">何氏私人财富终端</div>
+      <div class="password-dots">
+        <div class="dot" id="dot-0"></div><div class="dot" id="dot-1"></div><div class="dot" id="dot-2"></div><div class="dot" id="dot-3"></div>
+      </div>
+      <div class="pwd-security-hint">上次访问：3月2日 02:47 ｜ 来自：半山别墅</div>
+      <div class="keyboard" id="keyboard">
+        <div class="key-btn" data-val="1">1</div><div class="key-btn" data-val="2">2</div><div class="key-btn" data-val="3">3</div>
+        <div class="key-btn" data-val="4">4</div><div class="key-btn" data-val="5">5</div><div class="key-btn" data-val="6">6</div>
+        <div class="key-btn" data-val="7">7</div><div class="key-btn" data-val="8">8</div><div class="key-btn" data-val="9">9</div>
+        <div class="key-btn empty"></div><div class="key-btn" data-val="0">0</div><div class="key-btn del" id="del-btn">⌫</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 错误弹窗 -->
+  <div class="modal-mask" id="error-modal">
+    <div class="error-box" id="error-box"><div class="error-text" id="error-text"></div></div>
+  </div>
+
+  <!-- 成功弹窗 -->
+  <div class="modal-mask" id="success-modal">
+    <div class="success-box">
+      <div class="success-text">想知道什么，不如直接问我。</div>
+      <div style="color:#888; font-size:12px; margin-top:10px;">密码对了。算你还有点良心。</div>
+      <div class="enter-btn" id="enter-btn">进入终端</div>
+    </div>
+  </div>
+
+  <!-- 版权弹窗 -->
+  <div class="modal-mask" id="copyright-modal">
+    <div class="copyright-box-red" id="copyright-box">
+      <div class="copyright-text-red">该文件受何氏法务部保护，<br>禁止外传！</div>
+      <div class="copyright-signature-yellow">—— 何瑞璋</div>
+      <div class="enter-btn" id="copyright-btn" style="margin-top:20px; border-color: #cba258; color: #cba258; background: transparent;">我知道了</div>
+    </div>
+  </div>
+
+  <!-- 加载界面 -->
+  <div id="loading-screen">
+    <div class="loading-text">数据解密中...</div>
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="progress-fill"></div></div>
+  </div>
+
+  <!-- 资产仪表盘 -->
+  <div id="dashboard">
+    
+    <!-- 页面1：总览页 -->
+    <div class="page-container active" id="page-overview">
+      <div class="page-header">
+        <div class="page-title-zone" style="padding:0;">
+          <h1>何瑞璋的个人资产明细</h1>
+          <div class="auth">授权访问：<span>你</span></div>
+        </div>
+      </div>
+
+      <!-- 总资产卡片（初始为***，需点击） -->
+      <div class="total-card" id="total-card" onclick="triggerInitialTotalRoll()">
+        <div class="floating-profit" id="total-floating-profit">+ 0.00</div>
+        <div class="total-label">ESTIMATED NET WORTH</div>
+        <div class="total-value" id="total-asset-value">***</div>
+        <div class="total-cny">折合人民币：约 <span id="total-cny-value">***</span> 亿元</div>
+        <div class="total-hint" id="total-hint">点击查看详细</div>
+      </div>
+
+      <!-- 环形图 -->
+      <div class="chart-container">
+        <div class="donut-chart"></div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="dot deposit"></div>核心存款 55%</div>
+          <div class="legend-item"><div class="dot equity"></div>投资控股 15%</div>
+          <div class="legend-item"><div class="dot fixed"></div>固定资产 5%</div>
+          <div class="legend-item"><div class="dot collection"></div>珍藏信物 3%</div>
+          <div class="legend-item"><div class="dot vehicles"></div>座驾出行 4%</div>
+          <div class="legend-item"><div class="dot other"></div>其他隐性资产 18%</div>
+        </div>
+      </div>
+
+      <!-- 分类卡片 -->
+      <div class="group-card" onclick="goToPage('page-liquid-funds')"><div class="group-header"><div class="group-title">💳 流动资金 (Liquid Funds)</div><div class="group-icon">▶</div></div></div>
+      <div class="group-card" onclick="goToPage('page-deposits')"><div class="group-header"><div class="group-title">💵 核心存款 (Deposits)</div><div class="group-icon">▶</div></div></div>
+      <div class="group-card" onclick="goToPage('page-equities')"><div class="group-header"><div class="group-title">📈 投资与控股 (Equities)</div><div class="group-icon">▶</div></div></div>
+      <div class="group-card" onclick="goToPage('page-fixed-assets')"><div class="group-header"><div class="group-title">🏠 固定资产 (Fixed Assets)</div><div class="group-icon">▶</div></div></div>
+      <div class="group-card" onclick="goToPage('page-collections')"><div class="group-header"><div class="group-title">💎 珍藏与信物 (Collections)</div><div class="group-icon">▶</div></div></div>
+      <div class="group-card" onclick="goToPage('page-vehicles')"><div class="group-header"><div class="group-title">🚗 座驾与出行 (Vehicles)</div><div class="group-icon">▶</div></div></div>
+      <div class="group-card" onclick="goToPage('page-liabilities')"><div class="group-header"><div class="group-title" style="color: #ff6b6b;">⛓️ 无价之宝与负债</div><div class="group-icon" style="color: #ff6b6b;">▶</div></div></div>
+    
+      <!-- 留言区 -->
+      <div class="love-letter" id="love-letter-container">
+        <div class="text">
+          “查完这些数字，可能你会觉得很多。”<br><br>
+          “但这堆东西里，没有一样，能比得上你手腕上那条平安链。”<br><br>
+          “钱是工具，而你是我唯一的私心。看完了，就下楼。我煲了你爱喝的汤。”
+        </div>
+        <div class="signature">—— 何瑞璋</div>
+      </div>
+    </div>
+
+    <!-- 页面2：流动资金 -->
+    <div class="page-container" id="page-liquid-funds">
+      <div class="page-header"><div class="back-btn" onclick="goBack()">← 返回</div><div class="page-title-zone"><h1>流动资金</h1></div></div>
+      <div class="sub-list">
+        <div class="sub-item" onclick="toggleDetail(event, this)">
+          <div class="row-top"><span class="name">运通百夫长黑金卡 (主卡) <span class="click-hint">查看流水</span></span><span class="val">NO LIMIT</span></div>
+          <div class="desc">副卡在你钱包里。这是我的特权，也是你的底气。</div>
+          <div class="detail-box">
+            <div class="flow-item"><span class="target">@你附属黑卡消费</span><span class="money out">-32,000 HKD</span></div>
+            <div class="flow-item"><span class="target">@太平山顶餐厅晚宴</span><span class="money out">-8,600 HKD</span></div>
+            <div class="flow-item"><span class="target">@中环高级定制西装店</span><span class="money out">-18,500 HKD</span></div>
+            <div class="flow-item"><span class="target">@佳士得拍卖行(古董钢笔)</span><span class="money out">-125,000 EUR</span></div>
+            <div class="flow-item"><span class="target">@德国定制钢琴行</span><span class="money out">-85,000 EUR</span></div>
+          </div>
+        </div>
+        <div class="sub-item" onclick="toggleDetail(event, this)">
+          <div class="row-top"><span class="name">半山别墅保险库现金 <span class="click-hint">查看详情</span></span><span class="val">USD 850万</span></div>
+          <div class="desc">多国不记名旧钞，用于突发状态的灰色资金储备。</div>
+          <div class="detail-box">
+            <div style="font-size:12px; color:#aaa; line-height:1.8;">
+              <p><strong>美元：</strong>300万，折合人民币约 2,160万。</p>
+              <p><strong>港币：</strong>2,000万，折合人民币约 1,840万。</p>
+              <p><strong>瑞士法郎：</strong>150万，折合人民币约 1,215万。</p>
+              <p><strong>其他货币：</strong>少量英镑、欧元及黄金，合计折合人民币约 900万。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="total-asset-card" onclick="triggerRoll('liquid-total', 6120000000, 'liquid-hint')"><div class="total-asset-label">TOTAL LIQUID FUNDS</div><div class="total-asset-value" id="liquid-total">点击查看</div><div class="total-asset-hint" id="liquid-hint">港币结算</div></div>
+    </div>
+
+    <!-- 页面3：核心存款 -->
+    <div class="page-container" id="page-deposits">
+      <div class="page-header"><div class="back-btn" onclick="goBack()">← 返回</div><div class="page-title-zone"><h1>核心存款</h1></div></div>
+      <div class="sub-list">
+        <div class="sub-item" onclick="toggleDetail(event, this)">
+          <div class="row-top"><span class="name">瑞士银行私人离岸信托 <span class="click-hint">查看流水</span></span><span class="val">CHF 28亿</span></div>
+          <div class="desc">高度保密账户，何家资本正规化运作的境外压舱石。</div>
+          <div class="cny">折合人民币：约 226.8亿</div>
+          <div class="detail-box"><div class="flow-item"><span class="target">@瑞士私人银行托管费</span><span class="money out">-45,000 CHF</span></div><div class="flow-item"><span class="target">@离岸信托年度维护</span><span class="money out">-12,000 CHF</span></div><div class="flow-item"><span class="target">@资本利得转入</span><span class="money in">+2,500,000 CHF</span></div></div>
+        </div>
+        <div class="sub-item"><div class="row-top"><span class="name">汇丰银行家族主控账户</span><span class="val">HKD 365亿</span></div><div class="desc">掌控何氏集团上下游现金流的绝对枢纽。</div><div class="cny">折合人民币：约 335.8亿</div></div>
+        <div class="sub-item"><div class="row-top"><span class="name">渣打银行私人VIP账户</span><span class="val">HKD 42亿</span></div><div class="desc">日常非集团性大额调拨备用金。</div><div class="cny">折合人民币：约 38.6亿</div></div>
+      </div>
+      <div class="total-asset-card" onclick="triggerRoll('deposit-total', 652000000000, 'deposit-hint')"><div class="total-asset-label">TOTAL DEPOSITS</div><div class="total-asset-value" id="deposit-total">点击查看</div><div class="total-asset-hint" id="deposit-hint">港币结算</div></div>
+    </div>
+
+    <!-- 页面4：投资与控股 -->
+    <div class="page-container" id="page-equities">
+      <div class="page-header"><div class="back-btn" onclick="goBack()">← 返回</div><div class="page-title-zone"><h1>投资与控股</h1></div></div>
+      <div class="sub-list">
+        <div class="sub-item"><div class="row-top"><span class="name">你专属不可撤销终身信托 <span class="red-dot"></span></span><span class="val">HKD 20亿</span></div><div class="desc">为你设立的死契。即便我死了，也没人能收回这笔钱。</div><div class="detail-note">🔒 已公证，不可撤销。除你本人外，任何人（含何瑞璋）无权变更。</div><div class="cny">折合人民币：约 18.4亿</div></div>
+        <div class="sub-item"><div class="row-top"><span class="name">全球对冲基金组合投资</span><span class="val">USD 12亿</span></div><div class="desc">交由顶级私人银行团队打理，年化收益稳健。</div><div class="cny">折合人民币：约 86.4亿</div></div>
+        <div class="live-profit" id="live-profit-container">
+          <div class="name">📈 实时浮盈</div>
+          <div class="val" id="live-profit-value">+ 0.00</div>
+          <div class="live-profit-floating" id="equity-floating-profit">+ 0.00</div>
+        </div>
+      </div>
+      <div class="total-asset-card" onclick="triggerRoll('equity-total', 113600000000, 'equity-hint')"><div class="total-asset-label">TOTAL EQUITIES</div><div class="total-asset-value" id="equity-total">点击查看</div><div class="total-asset-hint" id="equity-hint">港币结算</div></div>
+    </div>
+
+    <!-- 页面5：固定资产 -->
+    <div class="page-container" id="page-fixed-assets">
+      <div class="page-header"><div class="back-btn" onclick="goBack()">← 返回</div><div class="page-title-zone"><h1>固定资产</h1></div></div>
+      <div class="sub-list">
+        <div class="sub-item" onclick="toggleDetail(event, this)">
+          <div class="row-top"><span class="name">中环半山顶级大宅 <span class="click-hint">查看详情</span></span><span class="val">HKD 8.5亿</span></div>
+          <div class="desc">何家话事人行宫。一楼会客厅，二楼主卧。</div>
+          <div class="cny">折合人民币：约 7.82亿</div>
+          <div class="detail-box"><div style="font-size:12px; color:#aaa; line-height:1.8;"><p><strong>位置：</strong>香港中环半山梅道</p><p><strong>面积：</strong>约 8,200 平方呎</p><p><strong>详情：</strong>独立大宅，配备私人电梯、恒温泳池、可容纳6辆车的车库。</p></div></div>
+        </div>
+        <div class="sub-item" onclick="toggleDetail(event, this)">
+          <div class="row-top"><span class="name">浅水湾独立屋 x 3 <span class="click-hint">查看详情</span></span><span class="val">HKD 15亿</span></div>
+          <div class="desc">已划入你的信托名下，作为庇护你的金丝笼底牌。</div>
+          <div class="cny">折合人民币：约 13.8亿</div>
+          <div class="detail-box"><div style="font-size:12px; color:#aaa; line-height:1.8;"><p>浅水湾道 110号，约 3,500 呎，市价约 4.5亿</p><p>浅水湾道 88号，约 4,200 呎，市价约 5.2亿</p><p>浅水湾道 16号，约 4,100 呎，市价约 5.3亿</p></div></div>
+        </div>
+        <div class="sub-item" onclick="toggleDetail(event, this)">
+          <div class="row-top"><span class="name">欧洲及瑞士多处庄园 <span class="click-hint">查看详情</span></span><span class="val">HKD 8.6亿</span></div>
+          <div class="desc">度假与私密聚会使用，远离香港的落脚点。</div>
+          <div class="cny">折合人民币：约 7.9亿</div>
+          <div class="detail-box">
+            <div style="font-size:12px; color:#aaa; line-height:1.8;">
+              <p><strong>瑞士日内瓦湖畔庄园：</strong>占地约 4 英亩，含私人码头，估值约 3.2亿 RMB。</p>
+              <p><strong>法国普罗旺斯酒庄：</strong>占地约 25 公顷，含葡萄园及酿酒坊，估值约 2.5亿 RMB。</p>
+              <p><strong>意大利托斯卡纳别墅：</strong>占地约 2 英亩，历史建筑，估值约 2.2亿 RMB。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="total-asset-card" onclick="triggerRoll('fixed-total', 32100000000, 'fixed-hint')"><div class="total-asset-label">TOTAL FIXED ASSETS</div><div class="total-asset-value" id="fixed-total">点击查看</div><div class="total-asset-hint" id="fixed-hint">港币结算</div></div>
+    </div>
+
+    <!-- 页面6：珍藏与信物 -->
+    <div class="page-container" id="page-collections">
+      <div class="page-header"><div class="back-btn" onclick="goBack()">← 返回</div><div class="page-title-zone"><h1>珍藏与信物</h1></div></div>
+      <div class="sub-list">
+        <div class="sub-item"><div class="row-top"><span class="name">家族红宝石勋章戒指</span><span class="val">无价之宝</span></div><div class="desc">曾亲手套在你的左手。</div></div>
+        <div class="sub-item"><div class="row-top"><span class="name">纯血黑马 "Shadow"</span><span class="val">USD 800万</span></div><div class="desc">如头狼般冷血孤独的坐骑。</div><div class="cny">折合人民币：约 5,760万</div></div>
+        <div class="sub-item" onclick="toggleDetail(event, this)">
+          <div class="row-top"><span class="name">地下恒温酒窖 <span class="click-hint">查看详情</span></span><span class="val">HKD 2,800万</span></div>
+          <div class="desc">某天夜里曾被砸碎一地，后来又重新藏满。</div>
+          <div class="cny">折合人民币：约 2,576万</div>
+          <div class="detail-box"><div style="font-size:12px; color:#aaa; line-height:1.8;"><p><strong>罗曼尼·康帝 (DRC) 1990年份：</strong>市价约 120万 RMB/瓶，共 6 瓶。</p><p><strong>麦卡伦 30年：</strong>市价约 15万 RMB/瓶，共 20 瓶。</p><p><strong>波摩 50年：</strong>市价约 8万 RMB/瓶，共 30 瓶。</p><p><strong>其他名酒：</strong>拉菲、柏图斯等，合计估值超 1,000万 RMB。</p></div></div>
+        </div>
+      </div>
+      <div class="total-asset-card" onclick="triggerRoll('collection-total', 90400000, 'collection-hint')"><div class="total-asset-label">TOTAL COLLECTIONS</div><div class="total-asset-value" id="collection-total">点击查看</div><div class="total-asset-hint" id="collection-hint">港币结算</div></div>
+    </div>
+
+    <!-- 页面7：座驾与出行 -->
+    <div class="page-container" id="page-vehicles">
+      <div class="page-header"><div class="back-btn" onclick="goBack()">← 返回</div><div class="page-title-zone"><h1>座驾与出行</h1></div></div>
+      <div class="sub-list">
+        <div class="sub-item" onclick="toggleDetail(event, this)">
+          <div class="row-top"><span class="name">日常出行车队 <span class="click-hint">查看详情</span></span><span class="val">HKD 4,200万</span></div>
+          <div class="detail-box"><div style="font-size:12px; color:#aaa; line-height:1.8;"><p>迈巴赫 S680 防弹版：粤Z·H9988 / 粤Z·H9989，里程 2,300km。</p><p>劳斯莱斯 幻影：HK·HE888，里程 5,600km。</p></div></div>
+        </div>
+        <div class="sub-item" onclick="toggleDetail(event, this)">
+          <div class="row-top"><span class="name">私人飞机 <span class="click-hint">查看详情</span></span><span class="val">HKD 6.8亿</span></div>
+          <div class="detail-box"><div style="font-size:12px; color:#aaa; line-height:1.8;"><p>湾流 G650ER，注册号 B-HRH。</p><p>定制胡桃木内饰，配备独立卧室、淋浴间及影音室。</p></div></div>
+        </div>
+        <div class="sub-item" onclick="toggleDetail(event, this)">
+          <div class="row-top"><span class="name">车库吃灰收藏品 <span class="click-hint">查看详情</span></span><span class="val">HKD 1.8亿</span></div>
+          <div class="desc">很少开，基本停在恒温车库里落灰。</div>
+          <div class="detail-box"><div style="font-size:12px; color:#aaa; line-height:1.8;"><p><strong>保时捷 918 Spyder：</strong>全球限量 918 台，市价约 1,800万 RMB，里程 800km。</p><p><strong>法拉利 LaFerrari：</strong>旗舰超跑，市价约 3,500万 RMB，里程 1,200km。</p><p><strong>奔驰 300SL 鸥翼门：</strong>古董车，市价约 1,200万 RMB，里程 15,000km。</p></div></div>
+        </div>
+      </div>
+      <div class="total-asset-card" onclick="triggerRoll('vehicle-total', 902000000, 'vehicle-hint')"><div class="total-asset-label">TOTAL VEHICLES</div><div class="total-asset-value" id="vehicle-total">点击查看</div><div class="total-asset-hint" id="vehicle-hint">港币结算</div></div>
+    </div>
+
+    <!-- 页面8：无价之宝与负债 -->
+    <div class="page-container" id="page-liabilities">
+      <div class="page-header"><div class="back-btn" onclick="goBack()">← 返回</div><div class="page-title-zone"><h1>无价之宝与负债</h1></div></div>
+      <div class="sub-list">
+        <div class="sub-item priceless"><div class="row-top"><span class="name">北海道雪地里的CCD相机</span><span class="val">无价</span></div></div>
+        <div class="sub-item priceless"><div class="row-top"><span class="name">你手腕上的“平安”手链</span><span class="val">无价</span></div></div>
+        <div style="height:1px; background:#1a1a1a; margin:20px 0;"></div>
+        <div class="sub-item debt"><div class="row-top"><span class="name">陪伴债：欠你的时间</span><span class="val">一生来还</span></div></div>
+        <div class="sub-item debt strikethrough"><div class="row-top"><span class="name">婚约债：欠赵家的交代</span><span class="val">已结清</span></div><div class="desc">已于3月1日结清。</div></div>
+      </div>
+      <div class="total-asset-card" style="cursor: default;"><div class="total-asset-label">TOTAL PRICELESS & LIABILITIES</div><div class="total-asset-value" style="font-size: 24px;">无价</div></div>
+    </div>
+
+  </div>
+
+  <!-- 分享按钮 -->
+  <div class="share-btn" id="share-btn">🔒</div>
+</div>
+
+<script>
+  let currentPwd = "";
+  const correctPwd = "1015";
+  let errorCount = 0;
+  let pageHistory = ['page-overview'];
+  
+  let isTotalClicked = false; 
+  let isInitRollFinished = false; 
+  let liveProfitTimer = null;
+  let baseTotal = 128650000000;
+  let baseProfit = 8500000;
+
+  // 实时时间
+  function updateTime() {
+    const now = new Date();
+    document.getElementById('live-time').innerText = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+  }
+  setInterval(updateTime, 1000);
+  updateTime();
+
+  // 警告弹窗
+  document.getElementById('warning-btn').addEventListener('click', function() {
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    document.getElementById('warning-modal').classList.remove('show');
+    setTimeout(() => {
+      document.getElementById('face-id-icon').classList.remove('scanning');
+      document.getElementById('face-id-icon').classList.add('success');
+      document.getElementById('face-id-text').innerText = "人脸认证通过";
+      document.getElementById('fingerprint-text').innerText = "请长按指纹继续";
+    }, 1200);
+  });
+
+  // 指纹长按
+  const fpZone = document.getElementById('fingerprint-zone');
+  const fpFill = document.getElementById('fingerprint-fill');
+  let fpTimer = null;
+  let fpProgress = 0;
+
+  fpZone.addEventListener('mousedown', startFingerprint);
+  fpZone.addEventListener('touchstart', startFingerprint);
+  fpZone.addEventListener('mouseup', endFingerprint);
+  fpZone.addEventListener('mouseleave', endFingerprint);
+  fpZone.addEventListener('touchend', endFingerprint);
+
+  function startFingerprint(e) {
+    if (document.getElementById('face-id-text').innerText !== "人脸认证通过") return;
+    e.preventDefault();
+    fpProgress = 0; fpFill.style.width = '0%';
+    fpTimer = setInterval(() => {
+      fpProgress += 5;
+      if (fpProgress >= 100) {
+        fpProgress = 100; clearInterval(fpTimer);
+        document.getElementById('fingerprint-text').innerText = "指纹验证通过";
+        document.getElementById('fingerprint-icon').style.color = '#4ade80';
+        setTimeout(() => {
+          document.getElementById('auth-zone').style.display = 'none';
+          document.getElementById('pwd-zone').classList.add('show');
+        }, 500);
+      }
+      fpFill.style.width = fpProgress + '%';
+    }, 50);
+  }
+  function endFingerprint() {
+    if (fpProgress < 100) { clearInterval(fpTimer); fpProgress = 0; fpFill.style.width = '0%'; }
+  }
+
+  // 键盘
+  document.getElementById('keyboard').addEventListener('click', function(e) {
+    const btn = e.target.closest('.key-btn');
+    if (!btn || btn.classList.contains('empty')) return;
+    if (btn.classList.contains('del')) {
+      if (currentPwd.length > 0) { currentPwd = currentPwd.slice(0, -1); updateDots(); }
+    } else {
+      if (currentPwd.length < 4) {
+        currentPwd += btn.dataset.val; updateDots();
+        if (currentPwd.length === 4) checkPassword();
+      }
+    }
+  });
+
+  function updateDots() {
+    [0,1,2,3].forEach((i) => {
+      const dot = document.getElementById('dot-' + i);
+      dot.classList.remove('filled', 'error');
+      if (i < currentPwd.length) dot.classList.add('filled');
+    });
+  }
+
+  function checkPassword() {
+    if (currentPwd === correctPwd) document.getElementById('success-modal').classList.add('show');
+    else triggerError();
+  }
+
+  function triggerError() {
+    if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 300]);
+    [0,1,2,3].forEach((i) => { const d = document.getElementById('dot-'+i); d.classList.remove('filled'); d.classList.add('error'); });
+    document.getElementById('lock-screen').style.animation = 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both';
+    // 修改点：第二次弹窗去掉“温月”
+    document.getElementById('error-text').innerText = errorCount % 2 === 0 ? "密码是我生日，\n你不会不记得了吧？\n何太？" : "你是不是故意的？\n别等我上来抓你。";
+    const errModal = document.getElementById('error-modal');
+    errModal.classList.add('show');
+    document.getElementById('error-box').style.animation = 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both';
+    setTimeout(() => {
+      errModal.classList.remove('show');
+      document.getElementById('error-box').style.animation = '';
+      currentPwd = ""; updateDots();
+    }, 2000);
+    errorCount++;
+  }
+
+  // 进入加载界面
+  document.getElementById('enter-btn').addEventListener('click', function() {
+    document.getElementById('success-modal').classList.remove('show');
+    document.getElementById('loading-screen').classList.add('show');
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += Math.random() * 15;
+      if (progress >= 100) {
+        progress = 100; clearInterval(interval);
+        setTimeout(() => {
+          document.getElementById('loading-screen').classList.remove('show');
+          document.getElementById('lock-screen').classList.add('hidden');
+          document.getElementById('dashboard').classList.add('show');
+          // 注意：这里不再自动触发总资产的滚动，而是等待用户点击
+        }, 500);
+      }
+      document.getElementById('progress-fill').style.width = progress + '%';
+    }, 200);
+  });
+
+  // 点击总资产卡片，开始滚动
+  function triggerInitialTotalRoll() {
+    if (isTotalClicked) return;
+    isTotalClicked = true;
+    document.getElementById('total-asset-value').innerText = 'HKD 0';
+    document.getElementById('total-cny-value').innerText = '0';
+    document.getElementById('total-hint').innerText = '计算中...';
+    
+    triggerRoll('total-asset-value', 128650000000, 'total-hint');
+  }
+
+  // 页面跳转
+  function goToPage(pageId) {
+    if (pageId !== pageHistory[pageHistory.length - 1]) pageHistory.push(pageId);
+    switchPage(pageId);
+  }
+  function goBack() {
+    if (pageHistory.length > 1) { pageHistory.pop(); switchPage(pageHistory[pageHistory.length - 1]); }
+    else switchPage('page-overview');
+  }
+  function switchPage(pageId) {
+    document.querySelectorAll('.page-container').forEach(p => p.classList.remove('active'));
+    document.getElementById(pageId).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  // 流水展开
+  function toggleDetail(event, item) {
+    event.stopPropagation();
+    const box = item.querySelector('.detail-box');
+    if (box) box.classList.toggle('show');
+  }
+
+  // 初始数字滚动
+  function triggerRoll(elementId, targetValue, hintId) {
+    const valueEl = document.getElementById(elementId);
+    const hintEl = document.getElementById(hintId);
+    if (valueEl.dataset.rolling === 'true') return;
+    valueEl.dataset.rolling = 'true';
+
+    const duration = 2000; 
+    const startTime = performance.now();
+    function updateNumber(currentTime) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easeOut = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+      const currentVal = Math.floor(targetValue * easeOut);
+      valueEl.innerText = 'HKD ' + currentVal.toLocaleString();
+      
+      if (elementId === 'total-asset-value') {
+        const cnyVal = (currentVal * 0.92 / 100000000).toFixed(2);
+        document.getElementById('total-cny-value').innerText = cnyVal;
+      }
+      if (progress < 1) requestAnimationFrame(updateNumber);
+      else {
+        valueEl.innerText = 'HKD ' + targetValue.toLocaleString();
+        if (hintEl) hintEl.innerText = '计算完成';
+        valueEl.dataset.rolling = 'false';
+        
+        if (elementId === 'total-asset-value') {
+          isInitRollFinished = true;
+          startLiveProfit(); // 滚动完成后，立刻启动跳动
+        }
+      }
+    }
+    requestAnimationFrame(updateNumber);
+  }
+
+  // 实时盈利与自动累加（800ms一次）
+  function startLiveProfit() {
+    if (liveProfitTimer) clearInterval(liveProfitTimer);
+    liveProfitTimer = setInterval(() => {
+      if (!isInitRollFinished) return;
+      
+      // 降低每次增加的数值：5,000 到 35,000 之间
+      let change = Math.floor(Math.random() * 30000) + 5000; 
+      baseTotal += change;
+      baseProfit += change; 
+      
+      const totalEl = document.getElementById('total-asset-value');
+      if (totalEl) {
+        totalEl.innerText = 'HKD ' + baseTotal.toLocaleString();
+        document.getElementById('total-cny-value').innerText = (baseTotal * 0.92 / 100000000).toFixed(2);
+        const totalFloating = document.getElementById('total-floating-profit');
+        totalFloating.innerText = '+ ' + change.toLocaleString();
+        totalFloating.classList.remove('show'); void totalFloating.offsetWidth; totalFloating.classList.add('show');
+      }
+      const profitEl = document.getElementById('live-profit-value');
+      if (profitEl) profitEl.innerText = '+ ' + baseProfit.toLocaleString();
+
+      const equityFloating = document.getElementById('equity-floating-profit');
+      if (equityFloating && document.getElementById('page-equities').classList.contains('active')) {
+        equityFloating.innerText = '+ ' + change.toLocaleString();
+        equityFloating.classList.remove('show'); void equityFloating.offsetWidth; equityFloating.classList.add('show');
+      }
+    }, 800); 
+  }
+
+  // 分享按钮与版权弹窗
+  document.getElementById('share-btn').addEventListener('click', () => {
+    const modal = document.getElementById('copyright-modal');
+    modal.classList.add('show');
+    const box = document.getElementById('copyright-box');
+    box.style.animation = 'none';
+    void box.offsetWidth; 
+    box.style.animation = 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both';
+  });
+  
+  document.getElementById('copyright-btn').addEventListener('click', () => {
+    document.getElementById('copyright-modal').classList.remove('show');
+  });
+</script>
+</body>
+</html>
