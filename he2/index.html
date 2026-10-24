@@ -1,0 +1,2491 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Julian Ho — Private</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root{ --bg:#000; --panel:rgba(255,255,255,.045); --panel2:rgba(255,255,255,.07); --line:rgba(255,255,255,.085); --line2:rgba(255,255,255,.14); --txt:#d9d9d9; --txt2:#9a9a9a; --txt3:#666; --accent:#c9b98f; --danger:#e05252; }
+  html,body{ height:100%; background:#000; font-family:-apple-system,BlinkMacSystemFont,"PingFang HK","PingFang SC","Microsoft JhengHei","Helvetica Neue",sans-serif; color:var(--txt); overflow:hidden; }
+  body{ display:flex; align-items:center; justify-content:center; }
+  #phone{ position:relative; width:100%; max-width:420px; height:100vh; height:100dvh; background:#000; overflow:hidden; box-shadow:0 0 120px rgba(0,0,0,.9); }
+  @media (min-width:520px) and (min-height:700px){ #phone{ height:92vh; max-height:900px; border-radius:46px; border:1px solid rgba(255,255,255,.075); box-shadow:0 0 0 1px rgba(0,0,0,.9), 0 40px 120px rgba(0,0,0,.95), inset 0 0 60px rgba(255,255,255,.012); } }
+  .page{ position:absolute; inset:0; opacity:0; transform:translateY(14px) scale(.995); pointer-events:none; transition:opacity .34s cubic-bezier(.4,0,.2,1), transform .34s cubic-bezier(.4,0,.2,1); overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; padding-bottom:34px; }
+  .page.active{ opacity:1; transform:none; pointer-events:auto; }
+  .page::-webkit-scrollbar{ width:0; }
+  .head{ position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:10px; padding:14px 16px 12px; background:linear-gradient(180deg, rgba(0,0,0,.96) 60%, rgba(0,0,0,0)); backdrop-filter:blur(14px); }
+  .back{ display:flex; align-items:center; gap:4px; background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:20px; padding:6px 12px 6px 9px; color:var(--txt2); font-size:13px; cursor:pointer; box-shadow:inset 0 1px 0 rgba(255,255,255,.06); transition:.2s; }
+  .back:active{ background:rgba(255,255,255,.1); transform:scale(.96); }
+  .head-title{ font-size:15px; color:#cfcfcf; letter-spacing:.5px; font-weight:500; }
+  .head-sub{ margin-left:auto; font-size:11px; color:var(--txt3); letter-spacing:.5px; }
+  #lockscreen{ display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding:56px 26px 34px; background: radial-gradient(ellipse 120% 70% at 50% 0%, rgba(60,60,70,.35) 0%, rgba(0,0,0,0) 60%), radial-gradient(ellipse 90% 60% at 50% 105%, rgba(40,40,50,.4) 0%, rgba(0,0,0,0) 65%), #000; }
+  .lock-top{ text-align:center; }
+  .lock-time{ font-size:66px; font-weight:200; letter-spacing:-2px; color:#eaeaea; line-height:1; text-shadow:0 0 40px rgba(255,255,255,.09); }
+  .lock-date{ margin-top:8px; font-size:13px; color:var(--txt2); letter-spacing:1.2px; }
+  .lock-owner{ margin-top:26px; font-size:11px; letter-spacing:5px; color:rgba(200,185,143,.75); font-weight:500; }
+  .lock-owner::before, .lock-owner::after{ content:''; display:inline-block; width:18px; height:1px; background:rgba(200,185,143,.35); vertical-align:middle; margin:0 10px; }
+  .lock-watch{ margin-top:14px; height:16px; font-size:12px; color:var(--danger); letter-spacing:1px; opacity:0; transition:opacity .3s; }
+  .lock-watch.show{ opacity:1; }
+  .dots{ display:flex; gap:16px; margin-top:22px; }
+  .dots span{ width:11px; height:11px; border-radius:50%; border:1px solid rgba(255,255,255,.32); transition:.18s; }
+  .dots span.on{ background:#d8d8d8; border-color:#d8d8d8; box-shadow:0 0 12px rgba(255,255,255,.5); }
+  .lock-err{ height:16px; margin-top:16px; font-size:12px; color:var(--danger); letter-spacing:1px; opacity:0; transition:opacity .2s; }
+  .lock-err.show{ opacity:1; }
+  .keypad{ width:100%; max-width:280px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px 20px; margin-top:6px; }
+  .key{ aspect-ratio:1/1; border-radius:50%; background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.07); backdrop-filter:blur(20px); box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 4px 14px rgba(0,0,0,.5); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:300; color:#dcdcdc; cursor:pointer; user-select:none; transition:.14s; }
+  .key:active{ background:rgba(255,255,255,.16); transform:scale(.93); }
+  .key.blank{ background:none; border:none; box-shadow:none; cursor:default; }
+  .key.del{ font-size:17px; color:var(--txt2); }
+  @keyframes shake{ 0%,100%{ transform:translateX(0); } 15%{ transform:translateX(-11px); } 30%{ transform:translateX(9px); } 45%{ transform:translateX(-7px); } 60%{ transform:translateX(5px); } 80%{ transform:translateX(-3px); } }
+  .shake{ animation:shake .5s cubic-bezier(.36,.07,.19,.97); }
+  #home{ display:flex; flex-direction:column; }
+  .statusbar{ display:flex; justify-content:space-between; align-items:center; padding:12px 22px 0; font-size:11.5px; color:#b9b9b9; letter-spacing:.5px; }
+  .statusbar .right{ display:flex; gap:5px; align-items:center; }
+  .bars{ display:flex; gap:2px; align-items:flex-end; }
+  .bars i{ display:block; width:3px; background:#b9b9b9; border-radius:1px; }
+  .bars i:nth-child(1){ height:4px; } .bars i:nth-child(2){ height:6px; } .bars i:nth-child(3){ height:8px; } .bars i:nth-child(4){ height:10px; opacity:.35; }
+  .batt{ width:22px; height:10px; border:1px solid rgba(255,255,255,.4); border-radius:3px; position:relative; }
+  .batt::after{ content:''; position:absolute; right:-3px; top:3px; width:2px; height:4px; background:rgba(255,255,255,.4); border-radius:1px; }
+  .batt i{ display:block; height:100%; width:58%; background:#b9b9b9; border-radius:2px; }
+  .home-top{ padding:26px 26px 6px; }
+  .home-name{ font-size:12px; letter-spacing:4px; color:rgba(200,185,143,.7); }
+  .home-greet{ margin-top:9px; font-size:44px; font-weight:200; color:#e2e2e2; letter-spacing:-1px; line-height:1; }
+  .home-date{ margin-top:12px; font-size:11.5px; color:var(--txt3); letter-spacing:1px; }
+  .app-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:24px 6px; padding:26px 16px 46px; }
+  .app{ display:flex; flex-direction:column; align-items:center; gap:9px; cursor:pointer; position:relative; }
+  .app-icon{ width:58px; height:58px; border-radius:17px; background:linear-gradient(150deg, rgba(255,255,255,.095), rgba(255,255,255,.028)); border:1px solid rgba(255,255,255,.085); box-shadow:inset 0 1px 0 rgba(255,255,255,.1), 0 8px 22px rgba(0,0,0,.65); backdrop-filter:blur(18px); display:flex; align-items:center; justify-content:center; color:#cfcfcf; transition:transform .16s ease, background .16s ease; }
+  .app:active .app-icon{ transform:scale(.92); background:rgba(255,255,255,.14); }
+  .app-icon svg{ width:26px; height:26px; }
+  .app-label{ font-size:11px; color:#9d9d9d; letter-spacing:.4px; }
+  .badge{ position:absolute; top:-4px; right:6px; min-width:17px; height:17px; padding:0 5px; background:#c0392b; border-radius:9px; font-size:10px; color:#fff; display:flex; align-items:center; justify-content:center; border:1.5px solid #000; z-index:2; }
+  .dock{ margin:auto 14px 34px; padding:13px 8px; border-radius:27px; background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.075); backdrop-filter:blur(24px); box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 10px 30px rgba(0,0,0,.6); display:grid; grid-template-columns:repeat(4,1fr); }
+  .dock .app-icon{ width:52px; height:52px; border-radius:15px; }
+  .dock .app-label{ display:none; }
+  .card{ margin:0 14px 12px; padding:15px 16px; border-radius:18px; background:var(--panel); border:1px solid var(--line); box-shadow:inset 0 1px 0 rgba(255,255,255,.045); }
+  .card-t{ font-size:11px; letter-spacing:2px; color:var(--txt3); margin:22px 20px 10px; text-transform:uppercase; }
+  .row{ display:flex; align-items:center; justify-content:space-between; }
+  .row + .row{ margin-top:13px; padding-top:13px; border-top:1px solid rgba(255,255,255,.05); }
+  .k{ font-size:13.5px; color:#cfcfcf; }
+  .v{ font-size:13.5px; color:#e6e6e6; font-variant-numeric:tabular-nums; }
+  .s{ font-size:11px; color:var(--txt3); margin-top:4px; }
+  .divider{ height:1px; background:rgba(255,255,255,.05); margin:0 18px; }
+  .wx-tabs{ display:flex; gap:8px; padding:4px 16px 14px; }
+  .wx-tab{ padding:7px 18px; border-radius:16px; background:rgba(255,255,255,.05); border:1px solid var(--line); font-size:13px; color:var(--txt2); cursor:pointer; user-select:none; letter-spacing:.5px; transition:.2s; }
+  .wx-tab:active{ transform:scale(.96); }
+  .wx-tab.active{ background:linear-gradient(150deg, rgba(200,185,143,.22), rgba(200,185,143,.08)); border-color:rgba(200,185,143,.3); color:rgba(200,185,143,.95); }
+  .wx-panel{ display:none; }
+  .wx-panel.active{ display:block; }
+  .chatlist{ padding:2px 0 20px; }
+  .chatitem{ display:flex; gap:13px; align-items:center; padding:13px 18px; cursor:pointer; transition:background .18s; }
+  .chatitem:active{ background:rgba(255,255,255,.06); }
+  .chatitem.pinned{ background:rgba(200,185,143,.04); }
+  .chatitem.pinned:active{ background:rgba(200,185,143,.1); }
+  .avatar{ width:46px; height:46px; border-radius:14px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:16px; color:#d0d0d0; background:linear-gradient(150deg, rgba(255,255,255,.11), rgba(255,255,255,.03)); border:1px solid rgba(255,255,255,.08); box-shadow:inset 0 1px 0 rgba(255,255,255,.08); letter-spacing:1px; }
+  .avatar.gold{ color:rgba(200,185,143,.95); background:linear-gradient(150deg, rgba(200,185,143,.16), rgba(200,185,143,.03)); border-color:rgba(200,185,143,.18); }
+  .chatmain{ flex:1; min-width:0; }
+  .chatname{ font-size:14.5px; color:#dcdcdc; display:flex; align-items:center; gap:7px; }
+  .tag{ font-size:9px; padding:1px 6px; border-radius:6px; background:rgba(200,185,143,.14); color:rgba(200,185,143,.85); letter-spacing:.5px; }
+  .chatprev{ font-size:12.5px; color:var(--txt3); margin-top:5px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .chattime{ font-size:11px; color:#4d4d4d; flex-shrink:0; align-self:flex-start; margin-top:4px; }
+  #chat{ display:flex; flex-direction:column; }
+  .chatbody{ flex:1; padding:10px 16px 10px; display:flex; flex-direction:column; gap:14px; overflow-y:auto; }
+  .msg{ display:flex; gap:9px; align-items:flex-end; max-width:100%; }
+  .msg.me{ flex-direction:row-reverse; }
+  .msg-av{ width:31px; height:31px; border-radius:10px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-size:12px; color:#c8c8c8; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.07); }
+  .bubble{ max-width:74%; padding:10px 14px; border-radius:17px; font-size:14px; line-height:1.55; letter-spacing:.2px; background:rgba(255,255,255,.075); border:1px solid rgba(255,255,255,.06); color:#dcdcdc; border-bottom-left-radius:5px; }
+  .msg.me .bubble{ background:linear-gradient(160deg, rgba(200,185,143,.19), rgba(200,185,143,.1)); border-color:rgba(200,185,143,.2); color:#e9e3d4; border-bottom-left-radius:17px; border-bottom-right-radius:5px; }
+  .bubble .tr{ color:rgba(255,255,255,.38); font-size:11.5px; font-weight:400; letter-spacing:.1px; margin-left:3px; }
+  .msg.me .bubble .tr{ color:rgba(233,227,212,.52); }
+  .sysmsg{ text-align:center; font-size:11px; color:#4a4a4a; letter-spacing:.5px; margin:6px 0; }
+  .bankcard{ margin:0 14px 12px; padding:19px 20px; border-radius:20px; position:relative; overflow:hidden; background:linear-gradient(140deg, rgba(255,255,255,.1), rgba(255,255,255,.025)); border:1px solid rgba(255,255,255,.1); box-shadow:inset 0 1px 0 rgba(255,255,255,.11), 0 14px 34px rgba(0,0,0,.65); backdrop-filter:blur(20px); }
+  .bankcard::after{ content:''; position:absolute; right:-60px; top:-70px; width:180px; height:180px; border-radius:50%; background:radial-gradient(circle, rgba(200,185,143,.16), transparent 68%); }
+  .bc-bank{ font-size:10px; letter-spacing:2.6px; color:#9a9a9a; }
+  .bc-type{ font-size:14px; color:#e2e2e2; margin-top:7px; letter-spacing:1px; }
+  .bc-num{ font-size:17px; letter-spacing:3.5px; color:#d5d5d5; margin-top:22px; font-variant-numeric:tabular-nums; }
+  .bc-foot{ display:flex; justify-content:space-between; margin-top:18px; font-size:11px; color:#8a8a8a; letter-spacing:1px; }
+  .bc-gold{ border-color:rgba(200,185,143,.22); background:linear-gradient(140deg, rgba(200,185,143,.14), rgba(255,255,255,.02)); }
+  .bc-gold .bc-type{ color:#e8dfc8; }
+  .pos{ color:#7fae7f; }
+  .neg{ color:#c07a7a; }
+  .callitem{ display:flex; align-items:center; gap:13px; padding:14px 18px; }
+  .call-ic{ width:38px; height:38px; border-radius:12px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.055); border:1px solid var(--line); color:#b0b0b0; }
+  .call-ic svg{ width:17px; height:17px; }
+  .call-ic.miss{ color:#c07a7a; border-color:rgba(192,122,122,.22); }
+  .call-n{ font-size:14.5px; color:#dcdcdc; }
+  .call-m{ font-size:11.5px; color:var(--txt3); margin-top:4px; }
+  .call-d{ font-size:11px; color:#4d4d4d; margin-left:auto; }
+  .mail{ padding:15px 18px; display:flex; gap:12px; }
+  .mail-dot{ width:7px; height:7px; border-radius:50%; margin-top:7px; flex-shrink:0; background:rgba(200,185,143,.85); box-shadow:0 0 9px rgba(200,185,143,.5); }
+  .mail-dot.read{ background:rgba(255,255,255,.13); box-shadow:none; }
+  .mail-t{ font-size:14px; color:#dcdcdc; }
+  .mail-f{ font-size:11px; color:var(--txt3); margin-top:4px; letter-spacing:.4px; }
+  .mail-p{ font-size:12.5px; color:#8f8f8f; margin-top:8px; line-height:1.6; }
+  .mail-p .tr{ display:block; color:rgba(255,255,255,.32); font-size:11.5px; margin-top:3px; }
+  .cal-item{ display:flex; gap:14px; padding:13px 18px; }
+  .cal-time{ font-size:12px; color:rgba(200,185,143,.85); width:52px; flex-shrink:0; font-variant-numeric:tabular-nums; padding-top:2px; letter-spacing:.5px; }
+  .cal-body{ flex:1; border-left:1px solid rgba(255,255,255,.08); padding-left:14px; }
+  .cal-t{ font-size:14px; color:#dcdcdc; }
+  .cal-s{ font-size:11.5px; color:var(--txt3); margin-top:5px; }
+  .cal-tag{ display:inline-block; font-size:9.5px; padding:2px 7px; border-radius:6px; margin-top:7px; letter-spacing:.6px; background:rgba(255,255,255,.06); color:#9d9d9d; }
+  .cal-tag.gold{ background:rgba(200,185,143,.14); color:rgba(200,185,143,.9); }
+  .set-item{ display:flex; align-items:center; gap:13px; padding:14px 18px; }
+  .set-ic{ width:34px; height:34px; border-radius:11px; flex-shrink:0; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.06); border:1px solid var(--line); color:#b5b5b5; }
+  .set-ic svg{ width:16px; height:16px; }
+  .set-l{ font-size:14px; color:#d5d5d5; }
+  .set-s{ font-size:11px; color:var(--txt3); margin-top:4px; }
+  .set-v{ margin-left:auto; font-size:12px; color:#6f6f6f; }
+  .profile{ display:flex; flex-direction:column; align-items:center; padding:26px 20px 20px; }
+  .profile-av{ width:82px; height:82px; border-radius:26px; background:linear-gradient(150deg, rgba(200,185,143,.2), rgba(255,255,255,.03)); border:1px solid rgba(200,185,143,.24); display:flex; align-items:center; justify-content:center; font-size:26px; color:rgba(200,185,143,.95); letter-spacing:2px; box-shadow:inset 0 1px 0 rgba(255,255,255,.14), 0 12px 34px rgba(0,0,0,.7); }
+  .profile-n{ margin-top:15px; font-size:18px; color:#e4e4e4; letter-spacing:1px; }
+  .profile-e{ margin-top:6px; font-size:11px; color:var(--txt3); letter-spacing:2.4px; }
+  .warn{ margin:22px 14px 0; padding:13px 16px; border-radius:14px; background:rgba(192,122,122,.07); border:1px solid rgba(192,122,122,.16); font-size:11px; color:#a8797a; text-align:center; line-height:1.7; letter-spacing:.5px; }
+  .mapv{ margin:0 14px 12px; height:190px; border-radius:20px; position:relative; overflow:hidden; background: radial-gradient(circle at 34% 44%, rgba(200,185,143,.1), transparent 42%), linear-gradient(160deg, #0b0b0d, #050506); border:1px solid var(--line); box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+  .mapv::before{ content:''; position:absolute; inset:0; background-image: linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px); background-size:34px 34px; }
+  .pin{ position:absolute; left:34%; top:44%; transform:translate(-50%,-100%); width:15px; height:15px; border-radius:50%; background:rgba(200,185,143,.9); box-shadow:0 0 0 7px rgba(200,185,143,.13), 0 0 26px rgba(200,185,143,.55); }
+  .pin::after{ content:''; position:absolute; left:50%; top:100%; transform:translateX(-50%); border:7px solid transparent; border-top-color:rgba(200,185,143,.9); }
+  .mapv-label{ position:absolute; left:16px; bottom:15px; font-size:12px; color:#cfcfcf; letter-spacing:1.2px; }
+  .mapv-sub{ position:absolute; left:16px; bottom:0; font-size:10.5px; color:#5a5a5a; letter-spacing:.6px; }
+
+  /* ---------- 远程拦截 ---------- */
+  #intercept{
+    position:absolute; top:14px; left:14px; right:14px; z-index:120;
+    padding:14px 16px 12px; border-radius:20px;
+    background:linear-gradient(160deg, rgba(42,10,12,.96), rgba(20,6,8,.96));
+    border:1px solid rgba(224,82,82,.4);
+    box-shadow:
+      0 0 0 1px rgba(224,82,82,.1),
+      0 18px 48px rgba(120,20,20,.5),
+      0 0 34px rgba(224,82,82,.2),
+      inset 0 1px 0 rgba(255,255,255,.06);
+    backdrop-filter:blur(28px) saturate(160%);
+    transform:translateY(-140%); opacity:0;
+    transition:transform .5s cubic-bezier(.2,.9,.25,1), opacity .4s;
+    pointer-events:none;
+  }
+  #intercept.show{ transform:none; opacity:1; pointer-events:auto; }
+  .ic-top{ display:flex; align-items:center; gap:8px; }
+  .ic-dot{
+    width:7px; height:7px; border-radius:50%;
+    background:#e05252; box-shadow:0 0 10px rgba(224,82,82,.9);
+    animation:icPulse 1.6s infinite;
+  }
+  @keyframes icPulse{
+    0%,100%{ opacity:1; transform:scale(1); }
+    50%{ opacity:.4; transform:scale(.85); }
+  }
+  .ic-app{
+    font-size:10px; letter-spacing:2.2px;
+    color:rgba(224,82,82,.9); text-transform:uppercase; font-weight:500;
+  }
+  .ic-body{ margin-top:10px; }
+  .ic-text{ font-size:14px; color:#ecdede; line-height:1.55; letter-spacing:.2px; }
+  .ic-tr{ margin-top:5px; font-size:11.5px; color:rgba(236,222,222,.4); line-height:1.5; }
+  .ic-foot{ display:flex; justify-content:flex-end; margin-top:12px; }
+  .ic-btn{
+    padding:7px 18px; border-radius:14px;
+    background:linear-gradient(150deg, rgba(224,82,82,.85), rgba(180,50,50,.75));
+    border:1px solid rgba(224,82,82,.5);
+    color:#fff; font-size:12px; letter-spacing:.5px; font-family:inherit;
+    cursor:pointer;
+    box-shadow:0 4px 14px rgba(224,82,82,.35), inset 0 1px 0 rgba(255,255,255,.14);
+    transition:.15s;
+  }
+  .ic-btn:active{ transform:scale(.94); }
+
+  /* ---------- 锁屏居中弹窗 ---------- */
+  #lockMsg{
+    position:absolute; inset:0; z-index:130;
+    display:flex; align-items:center; justify-content:center;
+    padding:30px; background:rgba(0,0,0,.55);
+    backdrop-filter:blur(6px);
+    opacity:0; pointer-events:none; transition:opacity .3s;
+  }
+  #lockMsg.show{ opacity:1; pointer-events:auto; }
+  .lm-card{
+    width:100%; max-width:320px;
+    padding:22px 22px 18px; border-radius:22px;
+    background:linear-gradient(160deg, rgba(42,10,12,.98), rgba(20,6,8,.98));
+    border:1px solid rgba(224,82,82,.45);
+    box-shadow:
+      0 0 0 1px rgba(224,82,82,.12),
+      0 24px 60px rgba(120,20,20,.6),
+      0 0 42px rgba(224,82,82,.25),
+      inset 0 1px 0 rgba(255,255,255,.06);
+    backdrop-filter:blur(28px) saturate(160%);
+    transform:scale(.9) translateY(10px);
+    transition:transform .4s cubic-bezier(.2,.9,.25,1);
+  }
+  #lockMsg.show .lm-card{ transform:none; }
+  .lm-top{ display:flex; align-items:center; gap:8px; }
+  .lm-dot{
+    width:7px; height:7px; border-radius:50%;
+    background:#e05252; box-shadow:0 0 10px rgba(224,82,82,.9);
+    animation:icPulse 1.6s infinite;
+  }
+  .lm-app{
+    font-size:10px; letter-spacing:2.2px;
+    color:rgba(224,82,82,.9); text-transform:uppercase; font-weight:500;
+  }
+  .lm-body{ margin-top:14px; }
+  .lm-text{ font-size:15.5px; color:#ecdede; line-height:1.6; letter-spacing:.2px; }
+  .lm-tr{ margin-top:6px; font-size:12px; color:rgba(236,222,222,.45); line-height:1.5; }
+  .lm-foot{ display:flex; justify-content:flex-end; margin-top:16px; }
+  .lm-btn{
+    padding:8px 22px; border-radius:14px;
+    background:linear-gradient(150deg, rgba(224,82,82,.85), rgba(180,50,50,.75));
+    border:1px solid rgba(224,82,82,.5);
+    color:#fff; font-size:12.5px; letter-spacing:.5px; font-family:inherit;
+    cursor:pointer;
+    box-shadow:0 4px 14px rgba(224,82,82,.35), inset 0 1px 0 rgba(255,255,255,.14);
+    transition:.15s;
+  }
+  .lm-btn:active{ transform:scale(.94); }
+
+  /* ---------- 朋友圈 / INS 点赞 ---------- */
+  .moment-actions{
+    display:flex; gap:16px; margin-top:11px;
+    padding-top:11px;
+    border-top:1px solid rgba(255,255,255,.045);
+  }
+  .moment-btn{
+    display:flex; align-items:center; gap:5px;
+    font-size:11.5px; color:#6f6f6f;
+    cursor:pointer; user-select:none;
+    letter-spacing:.5px;
+    transition:.18s;
+  }
+  .moment-btn:active{ transform:scale(.94); }
+  .moment-btn svg{ width:15px; height:15px; transition:.2s; }
+  .moment-btn.liked{ color:#d98a8a; }
+  .moment-btn.liked svg{
+    fill:currentColor;
+    stroke:currentColor;
+    transform:scale(1.1);
+  }
+
+  /* INS 点赞 */
+  .ig-post-acts svg.ig-heart{
+    cursor:pointer;
+    transition:.2s;
+  }
+  .ig-post-acts svg.ig-heart.liked{
+    color:#d98a8a;
+    fill:#d98a8a;
+    transform:scale(1.1);
+  }
+
+  /* ---------- INS ---------- */
+  .ig-topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:12px 16px 8px;
+    border-bottom:1px solid rgba(255,255,255,.05);
+  }
+  .ig-topbar-name{
+    font-size:16px; color:#e2e2e2; letter-spacing:.4px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .ig-topbar-name .lock{
+    font-size:11px; color:var(--txt3);
+  }
+  .ig-topbar-icons{ display:flex; gap:16px; color:#cfcfcf; }
+  .ig-topbar-icons svg{ width:20px; height:20px; }
+
+  .ig-profile{
+    padding:20px 16px 14px;
+    display:flex; align-items:center; gap:22px;
+  }
+  .ig-avatar{
+    width:78px; height:78px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(150deg, rgba(200,185,143,.25), rgba(255,255,255,.03));
+    border:2px solid rgba(200,185,143,.35);
+    display:flex; align-items:center; justify-content:center;
+    font-size:26px; color:rgba(200,185,143,.95); letter-spacing:2px;
+    box-shadow:0 0 20px rgba(200,185,143,.15), inset 0 1px 0 rgba(255,255,255,.14);
+  }
+  .ig-stats{ display:flex; gap:24px; }
+  .ig-stat{ text-align:center; }
+  .ig-stat b{
+    display:block; font-size:16px; color:#e2e2e2; font-weight:600;
+    font-variant-numeric:tabular-nums;
+  }
+  .ig-stat span{ font-size:11.5px; color:var(--txt3); letter-spacing:.3px; }
+
+  .ig-bio{
+    padding:0 16px 14px;
+  }
+  .ig-bio-n{
+    font-size:14px; color:#dcdcdc; letter-spacing:.3px;
+  }
+  .ig-bio-d{
+    font-size:12.5px; color:#8f8f8f;
+    margin-top:6px; line-height:1.6;
+  }
+  .ig-bio-tag{
+    display:inline-block; font-size:11.5px; color:rgba(200,185,143,.85);
+    margin-top:6px;
+  }
+
+  .ig-btns{
+    display:flex; gap:8px;
+    padding:0 16px 16px;
+  }
+  .ig-btn{
+    flex:1; text-align:center;
+    padding:8px 0; border-radius:10px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.1);
+    font-size:12.5px; color:#d5d5d5;
+    letter-spacing:.3px;
+  }
+  .ig-btn.gold{
+    background:linear-gradient(150deg, rgba(200,185,143,.22), rgba(200,185,143,.08));
+    border-color:rgba(200,185,143,.3);
+    color:rgba(200,185,143,.95);
+  }
+
+  .ig-highlights{
+    display:flex; gap:14px;
+    padding:6px 16px 16px;
+    overflow-x:auto;
+  }
+  .ig-highlights::-webkit-scrollbar{ height:0; }
+  .ig-hl{
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+    flex-shrink:0;
+  }
+  .ig-hl-circle{
+    width:56px; height:56px; border-radius:50%;
+    border:1px solid rgba(200,185,143,.3);
+    background:linear-gradient(150deg, rgba(200,185,143,.12), rgba(255,255,255,.02));
+    display:flex; align-items:center; justify-content:center;
+    font-size:20px;
+  }
+  .ig-hl span{ font-size:10.5px; color:#8a8a8a; letter-spacing:.3px; }
+
+  .ig-tabs{
+    display:flex;
+    border-top:1px solid rgba(255,255,255,.05);
+    border-bottom:1px solid rgba(255,255,255,.05);
+  }
+  .ig-tab{
+    flex:1; text-align:center;
+    padding:11px 0;
+    color:#6f6f6f;
+    border-bottom:1px solid transparent;
+    transition:.2s;
+  }
+  .ig-tab.active{
+    color:#e2e2e2;
+    border-bottom-color:rgba(200,185,143,.9);
+  }
+  .ig-tab svg{ width:18px; height:18px; }
+
+  .ig-post{
+    border-bottom:1px solid rgba(255,255,255,.05);
+  }
+  .ig-post-head{
+    display:flex; align-items:center; gap:10px;
+    padding:11px 14px;
+  }
+  .ig-post-av{
+    width:34px; height:34px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(150deg, rgba(200,185,143,.2), rgba(255,255,255,.03));
+    border:1px solid rgba(200,185,143,.25);
+    display:flex; align-items:center; justify-content:center;
+    font-size:12px; color:rgba(200,185,143,.95);
+  }
+  .ig-post-meta{ flex:1; min-width:0; }
+  .ig-post-u{
+    font-size:12.5px; color:#dcdcdc; letter-spacing:.3px;
+    display:flex; align-items:center; gap:5px;
+  }
+  .ig-post-u .v{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:12px; height:12px; border-radius:50%;
+    background:rgba(200,185,143,.9); color:#000;
+    font-size:8px; font-weight:700;
+  }
+  .ig-post-loc{
+    font-size:10.5px; color:#5f5f5f; margin-top:2px;
+  }
+  .ig-post-more{
+    color:#6f6f6f; font-size:16px; letter-spacing:1px;
+  }
+
+   .ig-post-img{
+    width:100%; aspect-ratio:1/1;
+    position:relative; overflow:hidden;
+    background:#050505;
+    display:flex; align-items:center; justify-content:center;
+    font-size:54px;
+    object-fit:cover;
+    object-position:center;
+  }
+  .ig-post-img::after{
+    content:''; position:absolute; inset:0;
+    background:
+      radial-gradient(circle at 30% 22%, rgba(255,255,255,.07), transparent 55%),
+      radial-gradient(circle at 75% 88%, rgba(0,0,0,.4), transparent 55%);
+    pointer-events:none;
+  }
+
+  /* INS 渲染配色 */
+  .ig-img-macau{
+    background:
+      radial-gradient(ellipse at 50% 78%, rgba(230,160,80,.4), transparent 55%),
+      radial-gradient(ellipse at 50% 20%, rgba(120,150,200,.22), transparent 55%),
+      linear-gradient(180deg, #0a0e1a 0%, #05070d 65%, #000 100%);
+  }
+  .ig-img-table{
+    background:
+      radial-gradient(ellipse at 40% 40%, rgba(200,185,143,.22), transparent 55%),
+      linear-gradient(150deg, #1a1410 0%, #0a0705 65%, #000 100%);
+  }
+  .ig-img-cigar{
+    background:
+      radial-gradient(circle at 55% 55%, rgba(190,120,60,.35), transparent 45%),
+      linear-gradient(150deg, #16100a 0%, #0a0605 65%, #000 100%);
+  }
+  .ig-img-horse{
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(200,185,143,.22), transparent 50%),
+      linear-gradient(180deg, #16140f 0%, #0a0908 65%, #000 100%);
+  }
+  .ig-img-sea{
+    background:
+      radial-gradient(ellipse at 50% 22%, rgba(140,160,190,.25), transparent 55%),
+      linear-gradient(180deg, #0d1622 0%, #050810 65%, #000 100%);
+  }
+  .ig-img-dark{
+    background:linear-gradient(150deg, #0f0f10 0%, #050505 100%);
+  }
+  /* 拳击馆 */
+  .ig-img-box{
+    background:
+      radial-gradient(circle at 50% 45%, rgba(200,60,60,.28), transparent 50%),
+      linear-gradient(150deg, #1a0808 0%, #0a0404 60%, #000 100%);
+  }
+  /* 杨枝甘露 */
+  .ig-img-drink{
+    background:
+      radial-gradient(circle at 50% 55%, rgba(240,170,60,.4), transparent 45%),
+      radial-gradient(circle at 50% 40%, rgba(255,210,120,.25), transparent 55%),
+      linear-gradient(150deg, #2a1a0c 0%, #150c05 60%, #050301 100%);
+  }
+  /* 扑克三条A */
+  .ig-img-card{
+    background:
+      radial-gradient(circle at 50% 50%, rgba(200,185,143,.18), transparent 60%),
+      linear-gradient(150deg, #14100a 0%, #080604 60%, #000 100%);
+  }
+  .ig-post-acts{
+    display:flex; gap:16px;
+    padding:11px 14px 6px;
+    color:#d9d9d9;
+  }
+  .ig-post-acts svg{ width:20px; height:20px; }
+  .ig-post-acts .save{ margin-left:auto; }
+
+  .ig-post-body{
+    padding:0 14px 14px;
+  }
+  .ig-post-likes{
+    font-size:12px; color:#dcdcdc; letter-spacing:.2px;
+  }
+  .ig-post-cap{
+    font-size:12.5px; color:#c8c8c8;
+    margin-top:6px; line-height:1.6;
+  }
+  .ig-post-cap b{
+    color:rgba(200,185,143,.9); font-weight:500; margin-right:4px;
+  }
+  .ig-post-cap .tr{
+    display:block;
+    color:rgba(255,255,255,.3);
+    font-size:11px;
+    margin-top:3px;
+  }
+  .ig-post-time{
+    font-size:10.5px; color:#4d4d4d;
+    margin-top:8px; letter-spacing:.4px;
+  }
+  .ig-post-cmts{
+    margin-top:9px;
+    font-size:12px; color:#8f8f8f;
+  }
+  .ig-post-cmt{ margin-top:4px; line-height:1.6; }
+  .ig-post-cmt b{ color:rgba(200,185,143,.85); font-weight:500; margin-right:4px; }
+
+  /* ---------- 朋友圈 ---------- */
+  .moment{ padding:16px 18px; display:flex; gap:12px; }
+  .moment-av{
+    width:42px; height:42px; border-radius:13px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:14px; color:#c8c8c8;
+    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.07);
+  }
+  .moment-av.gold{ color:rgba(200,185,143,.95); background:rgba(200,185,143,.12); border-color:rgba(200,185,143,.18); }
+  .moment-n{ font-size:13.5px; color:rgba(200,185,143,.88); letter-spacing:.5px; }
+  .moment-c{ font-size:13.5px; color:#cfcfcf; margin-top:8px; line-height:1.65; }
+  .moment-c .tr{
+    display:block;
+    color:rgba(255,255,255,.32);
+    font-size:11.5px;
+    font-weight:400;
+    margin-top:4px;
+  }
+  .moment-imgs{ display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-top:11px; }
+  .moment-imgs.one{ grid-template-columns:1fr; max-width:62%; }
+  .moment-imgs.two{ grid-template-columns:repeat(2,1fr); max-width:75%; }
+  .moment-img{
+    width:100%; aspect-ratio:1/1;
+    border-radius:10px;
+    border:1px solid rgba(255,255,255,.06);
+    display:block; position:relative; overflow:hidden;
+    background:linear-gradient(140deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+    object-fit:cover;
+  }
+  /* 渲染图片（无真图） */
+  .moment-img.r{
+    display:flex; align-items:center; justify-content:center;
+    font-size:30px;
+  }
+  .moment-img.r::after{
+    content:''; position:absolute; inset:0;
+    background: radial-gradient(circle at 30% 22%, rgba(255,255,255,.07), transparent 55%),
+                radial-gradient(circle at 75% 88%, rgba(0,0,0,.35), transparent 55%);
+    pointer-events:none;
+  }
+  /* 录音棚 */
+  .moment-img.rec{
+    background: linear-gradient(150deg, #1a1a22 0%, #0d0d15 60%, #050508 100%);
+  }
+  /* 画廊 */
+  .moment-img.gallery{
+    background: linear-gradient(150deg, #1e1a14 0%, #100c08 60%, #050402 100%);
+  }
+  /* 老照片 */
+  .moment-img.old{
+    background: linear-gradient(150deg, #3a3226 0%, #1f1a12 60%, #0a0805 100%);
+    filter: sepia(.4);
+  }
+  /* 甜品 */
+  .moment-img.dessert{
+    background: linear-gradient(150deg, #2a1e1a 0%, #150d0a 60%, #080504 100%);
+  }
+  /* 澳门夜景 */
+  .moment-img.macau{
+    background:
+      radial-gradient(ellipse at 50% 80%, rgba(230,160,80,.35), transparent 55%),
+      radial-gradient(ellipse at 50% 18%, rgba(120,150,200,.2), transparent 55%),
+      linear-gradient(180deg, #0a0e1a 0%, #05070d 65%, #000 100%);
+  }
+  /* 商务酒店 */
+  .moment-img.biz{
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(200,185,143,.25), transparent 55%),
+      linear-gradient(180deg, #14120c 0%, #0a0908 65%, #000 100%);
+  }
+
+  .moment-m{ display:flex; gap:14px; margin-top:11px; font-size:11px; color:#5f5f5f; letter-spacing:.5px; }
+  .moment-loc{ color:rgba(200,185,143,.6); }
+  .moment-cmts{ margin-top:10px; padding:10px 12px; border-radius:12px; background:rgba(255,255,255,.028); border:1px solid rgba(255,255,255,.045); }
+  .cmt{ font-size:12px; line-height:1.75; color:#a8a8a8; }
+  .cmt b{ color:rgba(200,185,143,.85); font-weight:500; }
+  .cmt .tr{ color:rgba(255,255,255,.28); font-size:11px; }
+  .cmt + .cmt{ margin-top:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,.035); }
+
+  /* ---------- 搜索 ---------- */
+  .searchbar{
+    margin:4px 14px 18px;
+    padding:12px 16px;
+    border-radius:16px;
+    background:rgba(255,255,255,.06);
+    border:1px solid rgba(255,255,255,.08);
+    display:flex; align-items:center; gap:10px;
+    color:var(--txt3);
+    font-size:13px;
+  }
+  .searchbar svg{ width:16px; height:16px; flex-shrink:0; }
+  .searchbar span{ color:#6f6f6f; letter-spacing:.3px; }
+
+  .search-item{
+    padding:14px 18px;
+    display:flex; align-items:center; gap:13px;
+  }
+  .search-ic{
+    width:34px; height:34px; border-radius:11px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,.05); border:1px solid var(--line);
+    color:#b5b5b5;
+  }
+  .search-ic svg{ width:15px; height:15px; }
+  .search-body{ flex:1; min-width:0; }
+  .search-q{ font-size:13.5px; color:#dcdcdc; line-height:1.5; }
+  .search-q .tr{
+    display:block;
+    color:rgba(255,255,255,.32);
+    font-size:11px;
+    font-weight:400;
+    margin-top:4px;
+    letter-spacing:.1px;
+  }
+  .search-when{ font-size:10.5px; color:#4d4d4d; flex-shrink:0; align-self:flex-start; margin-top:2px; }
+
+  /* ---------- 备忘录 ---------- */
+  .memo-item{
+    padding:15px 18px;
+    display:flex; gap:12px;
+  }
+  .memo-pin{
+    width:3px; border-radius:2px; flex-shrink:0;
+    background:rgba(200,185,143,.55);
+  }
+  .memo-pin.plain{ background:rgba(255,255,255,.15); }
+  .memo-body{ flex:1; min-width:0; }
+  .memo-date{ font-size:11px; color:var(--txt3); letter-spacing:.6px; }
+  .memo-text{
+    font-size:13px; color:#b8b8b8; margin-top:7px;
+    line-height:1.7; letter-spacing:.2px;
+  }
+  .memo-tag{
+    display:inline-block; font-size:9.5px; padding:2px 7px; border-radius:6px;
+    margin-top:9px; letter-spacing:.5px;
+    background:rgba(200,185,143,.12); color:rgba(200,185,143,.85);
+  }
+  .placeholder{ display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:60vh; text-align:center; color:var(--txt3); padding:40px 30px; }
+  .placeholder svg{ width:52px; height:52px; color:rgba(200,185,143,.35); margin-bottom:20px; }
+  .placeholder-t{ font-size:15px; color:#9a9a9a; letter-spacing:2px; }
+  .placeholder-s{ font-size:11.5px; color:#4a4a4a; margin-top:10px; letter-spacing:1px; line-height:1.8; }
+  @media (max-width: 400px){ .app-icon, .dock, .key, .avatar, .bankcard{ backdrop-filter:none !important; } }
+</style>
+</head>
+<body>
+
+<div id="phone">
+  <!-- 远程拦截 -->
+  <div id="intercept">
+    <div class="ic-top">
+      <span class="ic-dot"></span>
+      <span class="ic-app">JULIAN · 遠程</span>
+    </div>
+    <div class="ic-body">
+      <div class="ic-text" id="icText"></div>
+      <div class="ic-tr" id="icTr"></div>
+    </div>
+    <div class="ic-foot">
+      <button class="ic-btn" id="icBtn" onclick="closeIntercept()">知道啦</button>
+    </div>
+  </div>
+
+  <!-- 锁屏居中弹窗 -->
+  <div id="lockMsg">
+    <div class="lm-card">
+      <div class="lm-top">
+        <span class="lm-dot"></span>
+        <span class="lm-app">JULIAN · 遠程</span>
+      </div>
+      <div class="lm-body">
+        <div class="lm-text" id="lmText"></div>
+        <div class="lm-tr" id="lmTr"></div>
+      </div>
+      <div class="lm-foot">
+        <button class="lm-btn" id="lmBtn" onclick="closeLockMsg()">确定</button>
+      </div>
+    </div>
+  </div>
+
+  <section id="lockscreen" class="page active">
+    <div class="lock-top">
+      <div class="lock-time" id="lockTime">02:14</div>
+      <div class="lock-date" id="lockDate">2026年9月27日 星期日</div>
+      <div class="lock-owner">HO JULIAN</div>
+      <div class="lock-watch" id="lockWatch">你喺度做咩？</div>
+    </div>
+    <div style="width:100%;display:flex;flex-direction:column;align-items:center;">
+            <div class="dots" id="dots"><span></span><span></span><span></span><span></span></div>
+      <div class="lock-err" id="lockErr">密碼錯誤</div>
+    </div>
+    <div>
+      <div class="keypad" id="keypad">
+        <div class="key" data-k="1">1</div><div class="key" data-k="2">2</div><div class="key" data-k="3">3</div>
+        <div class="key" data-k="4">4</div><div class="key" data-k="5">5</div><div class="key" data-k="6">6</div>
+        <div class="key" data-k="7">7</div><div class="key" data-k="8">8</div><div class="key" data-k="9">9</div>
+        <div class="key blank"></div><div class="key" data-k="0">0</div><div class="key del" data-k="del">⌫</div>
+      </div>
+    </div>
+  </section>
+
+  <section id="home" class="page">
+    <div class="statusbar">
+      <span id="sbTime">02:14</span>
+      <span class="right"><span class="bars"><i></i><i></i><i></i><i></i></span><span style="font-size:10px;">5G</span><span class="batt"><i></i></span></span>
+    </div>
+    <div class="home-top">
+      <div class="home-name">HO JULIAN</div>
+      <div class="home-greet" id="homeGreet">02:14</div>
+      <div class="home-date" id="homeDate">2026年9月27日 · 星期日</div>
+    </div>
+
+    <div class="app-grid">
+      <div class="app" onclick="go('wechat')"><div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4.5c-3.6 0-6.5 2.2-6.5 5s2.9 5 6.5 5c.5 0 1-.1 1.5-.2l3 1.6-.8-2.5c1.6-.9 2.8-2.4 2.8-4C15.5 6.7 12.6 4.5 9 4.5z"/><path d="M15 8.4c2.9.3 5 2.3 5 4.7 0 1.4-.8 2.7-2 3.6l.6 2-2.4-1.2c-.4.1-.9.1-1.3.1-2.3 0-4.3-1.2-5-2.9"/></svg></div><span class="app-label">微信</span><span class="badge" id="wxBadge" style="display:none;">0</span></div>
+      <div class="app" onclick="go('wallet')"><div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.8" y="6" width="18.4" height="13" rx="2.6"/><path d="M2.8 10h18.4"/><circle cx="17" cy="14.6" r="1.2" fill="currentColor" stroke="none"/></svg></div><span class="app-label">钱包</span></div>
+      <div class="app" onclick="go('calls')"><div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .7-.2 1l-2.3 2.2z"/></svg></div><span class="app-label">通话</span></div>
+      <div class="app" onclick="go('calendar')"><div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3.4" y="5" width="17.2" height="15" rx="2.6"/><path d="M3.4 10h17.2M8 3v4M16 3v4"/></svg></div><span class="app-label">日历</span></div>
+      <div class="app" onclick="go('mail')"><div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.8" y="5.5" width="18.4" height="13" rx="2.6"/><path d="M3.4 7.6 12 13.2l8.6-5.6"/></svg></div><span class="app-label">邮件</span></div>
+      <div class="app" onclick="go('memo')"><div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4.5" y="3" width="15" height="18" rx="2.6"/><path d="M8.5 8h7M8.5 12h7M8.5 16h4.5"/></svg></div><span class="app-label">备忘录</span></div>
+      <div class="app" onclick="go('ins')"><div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.2" y="3.2" width="17.6" height="17.6" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/></svg></div><span class="app-label">INS</span></div>
+      <div class="app" onclick="go('search')"><div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></div><span class="app-label">搜索</span></div>
+      <div class="app" onclick="go('map')"><div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-6.4 7-11a7 7 0 1 0-14 0c0 4.6 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg></div><span class="app-label">地图</span></div>
+      <div class="app" onclick="go('settings')"><div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.6v2.6M12 18.8v2.6M2.6 12h2.6M18.8 12h2.6M5.3 5.3l1.9 1.9M16.8 16.8l1.9 1.9M18.7 5.3l-1.9 1.9M7.2 16.8l-1.9 1.9"/></svg></div><span class="app-label">设置</span></div>
+    </div>
+
+    <div class="dock">
+      <div class="app" onclick="go('wechat')"><div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4.5c-3.6 0-6.5 2.2-6.5 5s2.9 5 6.5 5c.5 0 1-.1 1.5-.2l3 1.6-.8-2.5c1.6-.9 2.8-2.4 2.8-4C15.5 6.7 12.6 4.5 9 4.5z"/><path d="M15 8.4c2.9.3 5 2.3 5 4.7 0 1.4-.8 2.7-2 3.6l.6 2-2.4-1.2c-.4.1-.9.1-1.3.1-2.3 0-4.3-1.2-5-2.9"/></svg></div></div>
+      <div class="app" onclick="go('calls')"><div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.6 10.8c1.4 2.8 3.8 5.2 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.2.2 2.4.6 3.6.1.4 0 .7-.2 1l-2.3 2.2z"/></svg></div></div>
+      <div class="app" onclick="go('mail')"><div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2.8" y="5.5" width="18.4" height="13" rx="2.6"/><path d="M3.4 7.6 12 13.2l8.6-5.6"/></svg></div></div>
+      <div class="app" onclick="go('settings')"><div class="app-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3.1"/><path d="M12 2.6v2.6M12 18.8v2.6M2.6 12h2.6M18.8 12h2.6M5.3 5.3l1.9 1.9M16.8 16.8l1.9 1.9M18.7 5.3l-1.9 1.9M7.2 16.8l-1.9 1.9"/></svg></div></div>
+    </div>
+  </section>
+
+  <section id="wechat" class="page">
+    <div class="head"><div class="back" onclick="go('home')">‹ 返回</div><span class="head-title">微信</span></div>
+    <div class="wx-tabs">
+      <div class="wx-tab active" data-tab="chats" onclick="switchWxTab('chats')">聊天</div>
+      <div class="wx-tab" data-tab="moments" onclick="switchWxTab('moments')">朋友圈</div>
+    </div>
+    <div class="wx-panel active" id="wxPanelChats"><div class="chatlist" id="chatlist"></div></div>
+        <div class="wx-panel" id="wxPanelMoments">
+      <div class="card" style="padding:4px 0;">
+
+        <!-- ① 江晏寧 · 两只小猫（1张真图） -->
+        <div class="moment">
+          <div class="moment-av gold">宁</div>
+          <div style="flex:1;">
+            <div class="moment-n">江晏寧</div>
+            <div class="moment-c">图片里有两只小猫￣ω￣=</div>
+            <div class="moment-imgs one">
+              <img class="moment-img" src="mom_jiangning.jpg" alt="">
+            </div>
+            <div class="moment-m"><span>今天 14:20</span><span class="moment-loc">半山</span></div>
+            <div class="moment-cmts">
+              <div class="cmt"><b>何瑞延：</b>删咗佢。<span class="tr">（删掉它。）</span></div>
+              <div class="cmt"><b>何瑞珩：</b>三條A，你個仔真係好有型。<span class="tr">（三条A，你儿子真的很有型。）</span></div>
+              <div class="cmt"><b>何瑞仪：</b>唔该都几黐你。<span class="tr">（唔该还挺黏你的。）</span></div>
+              <div class="cmt"><b>何瑞延 回 江晏寧：</b>你今晚死梗。<span class="tr">（你今晚死定了。）</span></div>
+              <div class="cmt"><b>江晏寧 回 何瑞延：</b>我错了老公^_^</div>
+              <div class="cmt"><b>何瑞延 回 何瑞珩：</b>你收皮。<span class="tr">（你少来。）</span></div>
+              <div class="cmt"><b>何瑞仪 回 江晏寧：</b>阿宁，下次拍多两张畀我。<span class="tr">（阿宁，下次多拍两张给我。）</span></div>
+              <div class="cmt"><b>江晏寧 回 何瑞仪：</b>好呀大姐！我还有很多！</div>
+            </div>
+          </div>
+        </div>
+        <div class="divider"></div>
+
+        <!-- ② 何瑞延 · 今晚三号厅（3张真图） -->
+        <div class="moment">
+          <div class="moment-av gold">延</div>
+          <div style="flex:1;">
+            <div class="moment-n">何瑞延</div>
+            <div class="moment-c">今晚三号厅。<span class="tr">（今晚三号厅。）</span></div>
+            <div class="moment-imgs">
+              <img class="moment-img" src="mom_julian1.jpg" alt="">
+              <img class="moment-img" src="mom_julian2.jpg" alt="">
+              <img class="moment-img" src="mom_julian3.jpg" alt="">
+            </div>
+            <div class="moment-m"><span>今天 22:30</span><span class="moment-loc">澳门</span></div>
+            <div class="moment-cmts">
+              <div class="cmt"><b>何瑞珩：</b>三号厅又唔畀人入？搞咩神秘。<span class="tr">（三号厅又不让人进？搞什么神秘。）</span></div>
+              <div class="cmt"><b>何瑞延：</b>系。<span class="tr">（是。）</span></div>
+              <div class="cmt"><b>江晏寧：</b>好看！下次我也要去看看！</div>
+              <div class="cmt"><b>何瑞延 回 江晏寧：</b>唔畀。<span class="tr">（不给。）</span></div>
+              <div class="cmt"><b>江晏寧 回 何瑞延：</b>🥺</div>
+              <div class="cmt"><b>何瑞仪：</b>阿延，个场干净唔干净？上次嗰单仲未清。<span class="tr">（阿延，那个场干净不干净？上次那单还没清。）</span></div>
+              <div class="cmt"><b>何瑞延 回 何瑞仪：</b>清咗。<span class="tr">（清了。）</span></div>
+              <div class="cmt"><b>何瑞璋：</b>三号厅今个月流水睇过。<span class="tr">（三号厅这个月流水看过。）</span></div>
+              <div class="cmt"><b>何瑞延 回 何瑞璋：</b>靓仔过上次。<span class="tr">（比上次漂亮。）</span></div>
+             
+            </div>
+          </div>
+        </div>
+        <div class="divider"></div>
+
+        <!-- ③ 何瑞珩 · 新艺人（渲染） -->
+        <div class="moment">
+          <div class="moment-av">珩</div>
+          <div style="flex:1;">
+            <div class="moment-n">何瑞珩</div>
+            <div class="moment-c">新签咗个艺人，19岁，声线好靓。签之前我专登听过佢唱现场。呢行做咗咁多年，仲会为一把声心动。<span class="tr">（新签了一个艺人，19岁，声线很好。签之前我特意去听了她唱现场。这行做了这么多年，还会为一把声音心动。）</span></div>
+            <div class="moment-imgs">
+              <div class="moment-img r rec">🎙️</div>
+              <div class="moment-img r rec">🎚️</div>
+              <div class="moment-img r rec">🎧</div>
+            </div>
+            <div class="moment-m"><span>今天 16:40</span><span class="moment-loc">中环 · 录音棚</span></div>
+            <div class="moment-cmts">
+              <div class="cmt"><b>何瑞延：</b>睇场还睇场，唔好搞到人。<span class="tr">（盯场归盯场，别搞到人家。）</span></div>
+              <div class="cmt"><b>何瑞珩：</b>……三条A你系咪觉得我系你？<span class="tr">（……三条A你是不是觉得我是你？）</span></div>
+              <div class="cmt"><b>何瑞延：</b>唔系。你比我麻烦。<span class="tr">（不是。你比我麻烦。）</span></div>
+              <div class="cmt"><b>何瑞仪：</b>阿珩，19岁，你唔好教坏人。<span class="tr">（阿珩，19岁，你别教坏人。）</span></div>
+              <div class="cmt"><b>何瑞珩 回 何瑞仪：</b>家姐，我边有。<span class="tr">（大姐，我哪有。）</span></div>
+              <div class="cmt"><b>何瑞璋：</b>合同睇清楚。<span class="tr">（合同看清楚。）</span></div>
+              <div class="cmt"><b>何瑞珩 回 何瑞璋：</b>大哥你次次都系呢句。<span class="tr">（大哥你每次都是这句。）</span></div>
+             
+            </div>
+          </div>
+        </div>
+        <div class="divider"></div>
+
+        <!-- ④ 何瑞仪 · 画廊（渲染） -->
+        <div class="moment">
+          <div class="moment-av">儀</div>
+          <div style="flex:1;">
+            <div class="moment-n">何瑞儀</div>
+            <div class="moment-c">新展布展中。有个新晋艺术家嘅作品我一眼睇中，倾咗三次先倾落嚟。有啲人你唔催，佢永远唔会交。<span class="tr">（新展布展中。有个新晋艺术家的作品我一眼看中，谈了三次才谈下来。有些人你不催，他永远不交。）</span></div>
+            <div class="moment-imgs">
+              <div class="moment-img r gallery">🖼️</div>
+              <div class="moment-img r gallery">🎨</div>
+              <div class="moment-img r gallery">🖌️</div>
+            </div>
+            <div class="moment-m"><span>今天 11:20</span><span class="moment-loc">中环 · 画廊</span></div>
+            <div class="moment-cmts">
+              <div class="cmt"><b>何瑞延：</b>三次。你已经好有耐性。<span class="tr">（三次。你已经很有耐心了。）</span></div>
+              <div class="cmt"><b>何瑞仪：</b>你系咪想讲我平时冇耐性。<span class="tr">（你是不是想说我平时没耐心。）</span></div>
+              <div class="cmt"><b>何瑞延：</b>我冇讲。<span class="tr">（我没说。）</span></div>
+              <div class="cmt"><b>何瑞珩：</b>大姐，开幕我过嚟。<span class="tr">（大姐，开幕我过来。）</span></div>
+              <div class="cmt"><b>何瑞仪：</b>记得带礼物。<span class="tr">（记得带礼物。）</span></div>
+              <div class="cmt"><b>何瑞璋：</b>边日？<span class="tr">（哪天？）</span></div>
+              <div class="cmt"><b>何瑞仪：</b>下个礼拜五。<span class="tr">（下礼拜五。）</span></div>
+              <div class="cmt"><b>江晏寧：</b>大姐我可以来吗！</div>
+              <div class="cmt"><b>何瑞仪 回 江晏寧：</b>当然可以，你比阿延有用。<span class="tr">（当然可以，你比阿延有用。）</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="divider"></div>
+
+        <!-- ⑤ 何瑞璋 · 季度报告（无图） -->
+        <div class="moment">
+          <div class="moment-av">璋</div>
+          <div style="flex:1;">
+            <div class="moment-n">何瑞璋</div>
+            <div class="moment-c">集团第三季度报告已发布。详细数据见官网。感谢各位同事。</div>
+            <div class="moment-m"><span>昨天 09:00</span><span class="moment-loc">中环</span></div>
+            <div class="moment-cmts">
+              <div class="cmt"><b>何瑞珩：</b>大哥，你朋友圈同公告板一样。<span class="tr">（大哥，你朋友圈跟公告板一样。）</span></div>
+              <div class="cmt"><b>何瑞仪：</b>你至少发张相。<span class="tr">（你至少发张照片。）</span></div>
+              <div class="cmt"><b>何瑞璋：</b>冇必要。<span class="tr">（没必要。）</span></div>
+              <div class="cmt"><b>何瑞延：</b>大哥居然有朋友圈。<span class="tr">（大哥居然有朋友圈。）</span></div>
+              <div class="cmt"><b>何瑞璋 回 何瑞延：</b>嗯。</div>
+            </div>
+          </div>
+        </div>
+        <div class="divider"></div>
+
+        <!-- ⑥ 陆生 · 生意伙伴 · 澳门（渲染） -->
+        <div class="moment">
+          <div class="moment-av">陆</div>
+          <div style="flex:1;">
+            <div class="moment-n">陆生</div>
+            <div class="moment-c">同何生倾咗成晚。呢行做咗二十几年，第一次见到咁后生又咁稳嘅老板。合作愉快。<span class="tr">（跟何先生聊了一整晚。这行做了二十几年，第一次见到这么年轻又这么稳的老板。合作愉快。）</span></div>
+            <div class="moment-imgs two">
+              <div class="moment-img r macau">🌃</div>
+              <div class="moment-img r macau">🥃</div>
+            </div>
+            <div class="moment-m"><span>昨天 01:30</span><span class="moment-loc">澳门 · 永利</span></div>
+            <div class="moment-cmts">
+              <div class="cmt"><b>何瑞延：</b>陆生客气。下次过嚟饮茶。<span class="tr">（陆生客气。下次过来喝茶。）</span></div>
+              
+            </div>
+          </div>
+        </div>
+        <div class="divider"></div>
+
+        <!-- ⑦ 何瑞仪 · 甜品（渲染） -->
+        <div class="moment">
+          <div class="moment-av">儀</div>
+          <div style="flex:1;">
+            <div class="moment-n">何瑞儀</div>
+            <div class="moment-c">晚宴前试菜。厨师问我甜度要唔要调低，我话唔使，我啲宾客都食惯甜。做善事同做甜品一样，你落几多心机，人哋食得出。<span class="tr">（晚宴前试菜。厨师问我甜度要不要调低，我说不用，我的宾客都吃惯甜。做善事跟做甜品一样，你放多少心思，别人吃得出来。）</span></div>
+            <div class="moment-imgs one">
+              <div class="moment-img r dessert">🍰</div>
+            </div>
+            <div class="moment-m"><span>5天前</span><span class="moment-loc">山顶</span></div>
+            <div class="moment-cmts">
+              <div class="cmt"><b>何瑞珩：</b>家姐讲嘢越来越有深度。<span class="tr">（大姐说话越来越有深度。）</span></div>
+              <div class="cmt"><b>何瑞延：</b>系甜。<span class="tr">（是甜。）</span></div>
+              <div class="cmt"><b>江晏寧：</b>大姐我也想吃😋</div>
+              <div class="cmt"><b>何瑞仪 回 江晏寧：</b>下次带你去。<span class="tr">（下次带你去。）</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="chat" class="page">
+    <div class="head"><div class="back" onclick="go('wechat')">‹ 微信</div><span class="head-title" id="chatName">對話</span><span class="head-sub" id="chatStatus"></span></div>
+    <div class="chatbody" id="chatBody"></div>
+  </section>
+
+  <section id="wallet" class="page">
+    <div class="head"><div class="back" onclick="go('home')">‹ 返回</div><span class="head-title">钱包</span><span class="head-sub">PRIVATE</span></div>
+    <div class="card-t">银行卡</div>
+    <div class="bankcard"><div class="bc-bank">BANCO NACIONAL ULTRAMARINO</div><div class="bc-type">VISA INFINITE · 黑卡</div><div class="bc-num">•••• •••• •••• 0730</div><div class="bc-foot"><span>HO JULIAN</span><span>EXP 07/30</span></div></div>
+    <div class="bankcard bc-gold"><div class="bc-bank">HSBC HONG KONG</div><div class="bc-type">私人银行 · 附属卡</div><div class="bc-num">•••• •••• •••• 1128</div><div class="bc-foot"><span>HO JULIAN</span><span>EXP 11/28</span></div></div>
+    <div class="card-t">资产总览</div>
+    <div class="card">
+      <div class="row"><div><div class="k">澳门贵宾厅 · 持股</div><div class="s">永利皇宫 · 长期合作</div></div><div class="v">MOP$ 4,820,000,000</div></div>
+      <div class="row"><div><div class="k">夜总会 · 高级会所</div><div class="s">澳门 · 香港 · 曼谷</div></div><div class="v">HK$ 1,240,000,000</div></div>
+      <div class="row"><div><div class="k">航运 · 东南亚线</div><div class="s">私人船队 · 六艘</div></div><div class="v">HK$ 890,000,000</div></div>
+      <div class="row"><div><div class="k">酒庄</div><div class="s">波尔多 · 勃艮第 · 纳帕</div></div><div class="v">HK$ 320,000,000</div></div>
+      <div class="row"><div><div class="k">马匹 · 名表 · 车</div><div class="s">私人马场 · 三辆</div></div><div class="v">HK$ 187,000,000</div></div>
+      <div class="row"><div><div class="k">唔该の金库</div><div class="s">猫信托 · 每月自动转账</div></div><div class="v">HK$ 2,400,000</div></div>
+    </div>
+    <div class="card-t">信用卡账单</div>
+    <div class="card">
+      <div class="row"><div><div class="k">本期账单 · 黑卡</div><div class="s">还款日 10月20日</div></div><div class="v neg">MOP$ 8,472,900</div></div>
+      <div class="row"><div><div class="k">本期账单 · 附属卡</div><div class="s">还款日 10月18日</div></div><div class="v neg">HK$ 1,247,600</div></div>
+      <div class="row"><div><div class="k">上月消费摘要</div><div class="s">雪茄 · 定制衬衫 · 腕表 · 猫粮</div></div><div class="v pos">已结清</div></div>
+    </div>
+  </section>
+
+  <section id="calls" class="page">
+    <div class="head"><div class="back" onclick="go('home')">‹ 返回</div><span class="head-title">最近通话</span><span class="head-sub">今日</span></div>
+    <div class="card" style="padding:4px 0;">
+      <div class="callitem"><div class="call-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M17 7H9M17 7v8"/></svg></div><div><div class="call-n">江晏寧</div><div class="call-m">已接 · 12分47秒</div></div><div class="call-d">22:41</div></div>
+      <div class="callitem"><div class="call-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M17 7H9M17 7v8"/></svg></div><div><div class="call-n">何瑞珩 · 二佬</div><div class="call-m">已接 · 3分08秒</div></div><div class="call-d">21:03</div></div>
+      <div class="callitem"><div class="call-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M17 7H9M17 7v8"/></svg></div><div><div class="call-n">赌场经理</div><div class="call-m">已接 · 5分22秒</div></div><div class="call-d">20:15</div></div>
+      <div class="callitem"><div class="call-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M17 7H9M17 7v8"/></svg></div><div><div class="call-n">司机</div><div class="call-m">已接 · 0分47秒</div></div><div class="call-d">18:50</div></div>
+      <div class="callitem"><div class="call-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M17 7H9M17 7v8"/></svg></div><div><div class="call-n">何瑞儀 · 大姐</div><div class="call-m">已接 · 8分22秒</div></div><div class="call-d">15:30</div></div>
+      <div class="callitem"><div class="call-ic miss"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10M17 7 7 17"/></svg></div><div><div class="call-n">何瑞璋 · 大哥</div><div class="call-m">未接来电 · 2次</div></div><div class="call-d">14:45</div></div>
+      <div class="callitem"><div class="call-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M17 7H9M17 7v8"/></svg></div><div><div class="call-n">助理</div><div class="call-m">已接 · 1分52秒</div></div><div class="call-d">14:00</div></div>
+      <div class="callitem"><div class="call-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M17 7H9M17 7v8"/></svg></div><div><div class="call-n">夜总会经理</div><div class="call-m">已接 · 3分40秒</div></div><div class="call-d">昨日</div></div>
+      <div class="callitem"><div class="call-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M17 7H9M17 7v8"/></svg></div><div><div class="call-n">航运主管 · 新加坡</div><div class="call-m">已接 · 6分18秒</div></div><div class="call-d">昨日</div></div>
+      <div class="callitem"><div class="call-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M17 7H9M17 7v8"/></svg></div><div><div class="call-n">何鴻謙 · 老豆</div><div class="call-m">已接 · 2分30秒</div></div><div class="call-d">昨日</div></div>
+      <div class="callitem"><div class="call-ic miss"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7l10 10M17 7 7 17"/></svg></div><div><div class="call-n">陌生号码 · 澳门</div><div class="call-m">未接来电 · 3次</div></div><div class="call-d">昨日</div></div>
+      <div class="callitem"><div class="call-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M17 7H9M17 7v8"/></svg></div><div><div class="call-n">兽医 · 唔该定期体检</div><div class="call-m">已接 · 1分08秒</div></div><div class="call-d">週五</div></div>
+    </div>
+  </section>
+
+  <section id="calendar" class="page">
+    <div class="head"><div class="back" onclick="go('home')">‹ 返回</div><span class="head-title">日历</span><span class="head-sub">2026年9月</span></div>
+    <div class="card-t">今日 · 9月27日 星期日</div>
+    <div class="card" style="padding:6px 0;">
+      <div class="cal-item"><div class="cal-time">15:00</div><div class="cal-body"><div class="cal-t">澳门 · 贵宾厅视察</div><div class="cal-s">永利皇宫 · 三号厅</div><span class="cal-tag gold">生意</span></div></div>
+      <div class="cal-item"><div class="cal-time">19:30</div><div class="cal-body"><div class="cal-t">和晏宁吃饭</div><div class="cal-s">半山别墅</div><span class="cal-tag gold">私人</span></div></div>
+      <div class="cal-item"><div class="cal-time">22:00</div><div class="cal-body"><div class="cal-t">搏击馆</div><div class="cal-s">中环 · 私人教练</div><span class="cal-tag">运动</span></div></div>
+    </div>
+    <div class="card-t">本周</div>
+    <div class="card" style="padding:6px 0;">
+      <div class="cal-item"><div class="cal-time">周一</div><div class="cal-body"><div class="cal-t">澳门 · 赌牌续约会议</div><div class="cal-s">澳门 · 私人会所 · 14:00</div><span class="cal-tag gold">生意</span></div></div>
+      <div class="cal-item"><div class="cal-time">周三</div><div class="cal-body"><div class="cal-t">老宅家宴</div><div class="cal-s">半山 · 何家老宅 · 19:00</div><span class="cal-tag gold">家人</span></div></div>
+      <div class="cal-item"><div class="cal-time">周五</div><div class="cal-body"><div class="cal-t">新加坡 · 航运签约</div><div class="cal-s">滨海湾 · 商务午餐</div><span class="cal-tag gold">生意</span></div></div>
+    </div>
+    <div class="card-t">下月</div>
+    <div class="card" style="padding:6px 0;">
+      <div class="cal-item"><div class="cal-time">10/03</div><div class="cal-body"><div class="cal-t">曼谷 · 商务</div><div class="cal-s">三日两夜 · 东南亚线</div><span class="cal-tag">生意</span></div></div>
+      <div class="cal-item"><div class="cal-time">10/12</div><div class="cal-body"><div class="cal-t">巴黎 · 酒庄考察</div><div class="cal-s">波尔多 · 新酒试饮</div><span class="cal-tag">私藏</span></div></div>
+      <div class="cal-item"><div class="cal-time">10/20</div><div class="cal-body"><div class="cal-t">集团董事会</div><div class="cal-s">中环 · 何氏总部</div><span class="cal-tag gold">生意</span></div></div>
+      <div class="cal-item"><div class="cal-time">10/30</div><div class="cal-body"><div class="cal-t">唔该 · 半岁生日</div><div class="cal-s">半山别墅 · 已订猫蛋糕</div><span class="cal-tag gold">私人</span></div></div>
+    </div>
+  </section>
+
+  <section id="mail" class="page">
+    <div class="head"><div class="back" onclick="go('home')">‹ 返回</div><span class="head-title">邮件</span><span class="head-sub">6 封未读</span></div>
+    <div class="card" style="padding:4px 0;">
+      <div class="mail"><div class="mail-dot"></div><div><div class="mail-t">赌场月报 · 8月业绩</div><div class="mail-f">赌场经理 · 09:12</div><div class="mail-p">延哥，8月贵宾厅嘅流水比预期高咗一成半，主要系东南亚嗰边嘅新客。详细报表喺附件度，下个礼拜二你上嚟澳门我再同你口头汇报。<span class="tr">（延哥，8月贵宾厅的流水比预期高了一成半，主要是东南亚那边的新客。详细报表在附件里，下个礼拜二你上来澳门我再跟你口头汇报。）</span></div></div></div>
+      <div class="divider"></div>
+      <div class="mail"><div class="mail-dot"></div><div><div class="mail-t">新加坡航运 · 合同签署</div><div class="mail-f">助理转 · 08:40</div><div class="mail-p">何生，新加坡嗰边嘅合同已经核对好，律师意见书附喺第三页。礼拜五下昼两点，滨海湾签约，对方总裁会亲自到场。<span class="tr">（何生，新加坡那边的合同已经核对好，律师意见书附在第三页。礼拜五下午两点，滨海湾签约，对方总裁会亲自到场。）</span></div></div></div>
+      <div class="divider"></div>
+      <div class="mail"><div class="mail-dot"></div><div><div class="mail-t">二佬 · 夜总会联名嘅事</div><div class="mail-f">何瑞珩 · 07:15</div><div class="mail-p">三条A，你嗰间夜总会嘅品牌联名，我谂咗两日，觉得可以倾。礼拜五我过嚟澳门搵你，你唔好又话开会唔得闲，我知你礼拜五冇安排。<span class="tr">（三条A，你那家夜总会的品牌联名，我想了两天，觉得可以谈。礼拜五我过来澳门找你，你别又说开会没空，我知道你礼拜五没安排。）</span></div></div></div>
+      <div class="divider"></div>
+      <div class="mail"><div class="mail-dot"></div><div><div class="mail-t">大姐 · 慈善晚宴邀请</div><div class="mail-f">何瑞儀 · 昨天</div><div class="mail-p">阿延，下个月慈善晚宴，何家四兄妹要一齐出席。你嗰日唔好安排澳门嘅事，老豆都会嚟。带埋晏宁。<span class="tr">（阿延，下个月慈善晚宴，何家四兄妹要一起出席。你那天别安排澳门的事，老豆也会来。带上晏宁。）</span></div></div></div>
+      <div class="divider"></div>
+      <div class="mail"><div class="mail-dot read"></div><div><div class="mail-t">波尔多酒庄 · 2023 期酒</div><div class="mail-f">Château 客户经理 · 週三</div><div class="mail-p">Mr. Ho，你订嘅 2023 年份 Musigny 同 Petrus 已经入库，共三箱。10月中旬可以安排装运，麻烦你确认收货地址。<span class="tr">（Mr. Ho，你订的 2023 年份 Musigny 和 Petrus 已经入库，共三箱。10月中旬可以安排装运，麻烦你确认收货地址。）</span></div></div></div>
+      <div class="divider"></div>
+      <div class="mail"><div class="mail-dot read"></div><div><div class="mail-t">南华早报 · 采访邀约</div><div class="mail-f">公关部转 · 週二</div><div class="mail-p">何生，南华早报想做个「港澳新生代掌门人」嘅专题，想采访你。公关部建议推咗佢，你点睇？<span class="tr">（何生，南华早报想做个「港澳新生代掌门人」的专题，想采访你。公关部建议推掉它，你怎么看？）</span></div></div></div>
+    </div>
+  </section>
+
+  <section id="memo" class="page">
+    <div class="head">
+      <div class="back" onclick="go('home')">‹ 返回</div>
+      <span class="head-title">备忘录</span>
+      <span class="head-sub">PRIVATE</span>
+    </div>
+
+    <div class="card-t">工作</div>
+    <div class="card" style="padding:4px 0;">
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月26日 · 23:14</div>
+          <div class="memo-text">三号厅装修方案打回，三号厅不能动，原因不用跟任何人解释。让他们改十五号厅的方案，三号厅保持原样。</div>
+          <span class="memo-tag">工作</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月25日 · 18:40</div>
+          <div class="memo-text">周五 14:00 滨海湾签约。对方总裁亲自来，说明很看重这条线。合同第三页律师意见看过了，没问题。新加坡住一晚，第二天回来。对方安排的晚宴推掉，就签个字。</div>
+          <span class="memo-tag">工作</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月24日 · 09:20</div>
+          <div class="memo-text">8月流水高了一成半。东南亚新客，三个人的团，背景查过，干净。他们的钱从哪来不重要，重要的是他们要什么。让经理盯紧点，别把人跟丢。</div>
+          <span class="memo-tag">工作</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月23日 · 16:05</div>
+          <div class="memo-text">马来西亚那个又托人来说了。不见。想借航运线，不管出什么价都不引荐。航运是命脉，不是谁塞点钱就能用。以后这种直接拦下，不用报到我这里。</div>
+          <span class="memo-tag">工作</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月22日 · 22:30</div>
+          <div class="memo-text">码头那件事，大哥打了个电话摆平了。对面断肋骨那个，医药费我让人送过去了，双倍。大哥说不要有下次。我知道，但有的时候不打个样子出来，以后谁都想试试。</div>
+          <span class="memo-tag">工作</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月18日 · 11:30</div>
+          <div class="memo-text">巴黎 10/12–10/15。13号整天留空，不要安排任何事，也不要见人。助理那边已经确认过了。</div>
+          <span class="memo-tag">工作</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月15日 · 20:15</div>
+          <div class="memo-text">南华早报的采访推掉。公关部还想争取，说是个好机会。不是什么好机会，是我没有必要给他们写稿。以后这种直接推，不用问我。</div>
+          <span class="memo-tag">工作</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card-t">私人</div>
+    <div class="card" style="padding:4px 0;">
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月26日 · 22:50</div>
+          <div class="memo-text">雪茄快没了。大卫杜夫，深烘，之前那个型号。让助理订两盒。上个月买的那盒太淡了，抽了两支就给司机了。</div>
+          <span class="memo-tag">私人</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月22日 · 21:00</div>
+          <div class="memo-text">搏击馆的时间改成周三周六。新教练还行，下手重，我喜欢这种。之前那个太客气，练不到东西。</div>
+          <span class="memo-tag">私人</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月20日 · 16:20</div>
+          <div class="memo-text">波尔多那批酒 10 月中旬到。Musigny 3 箱，Petrus 3 箱，还有两箱分开放的。到货之后让酒窖那边放 C 区，恒温恒湿那边，别跟去年的混在一起。</div>
+          <span class="memo-tag">私人</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月18日 · 15:40</div>
+          <div class="memo-text">那块表送去维修了，说是机芯问题，要下个月才能取。顺手让他们换条深灰色的鳄鱼皮带。之前那条戴久了有点软。</div>
+          <span class="memo-tag">私人</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月15日 · 10:00</div>
+          <div class="memo-text">GT3 送去保养。做一次全面检查，顺便看看刹车。周末如果没事，想去西贡那边跑一转。很久没开快车了。</div>
+          <span class="memo-tag">私人</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card-t">她</div>
+    <div class="card" style="padding:4px 0;">
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月26日 · 23:30</div>
+          <div class="memo-text">她说想去看那个画展。下周三。让助理查一下那个馆的闭馆时间，避开人多的时候。买两张票，包场。</div>
+          <span class="memo-tag">她</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月22日 · 19:40</div>
+          <div class="memo-text">最近瘦了。让老宅那边的厨房煲汤，按以前的方子，每周送两次。送家里，不要送公司。跟司机说，到了直接放门口，不用敲门。</div>
+          <span class="memo-tag">她</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月19日 · 23:20</div>
+          <div class="memo-text">出差前一晚。她睡着了，睡相很差，一条腿压在我身上。懒得推开。明天早班机，行李还没收，但我不想动。她今天吃了螺蛳粉，屋里那股味现在还没散干净。骂了她一顿，她还是笑嘻嘻的。哎，老婆好可爱。</div>
+          <span class="memo-tag">她</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月20日 · 01:30</div>
+          <div class="memo-text">到酒店。应酬到很晚，酒喝了不少，不过没醉。给她发了一张窗外的照片，其实没什么好看的，上海夜景而已。她大概会追问我在哪、跟谁、吃什么。不想解释。发完就关消息了，后来还是点开看了一眼。她回了个"嗯"。就一个嗯。可能生气了，怎么办。</div>
+          <span class="memo-tag">她</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月21日 · 20:15</div>
+          <div class="memo-text">上楼了。她居然真的忍着等我回来才吃，坐在那边一副很乖的样子。装不了多久的，我知道她。果然吃到一半就开始抢我筷子上的东西，我说她两句她还笑。</div>
+          <span class="memo-tag">她</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card-t">唔该</div>
+    <div class="card" style="padding:4px 0;">
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月26日 · 07:30</div>
+          <div class="memo-text">罐头快没了。那个牌子。不要换。上次换了一种，两天没吃东西，最后是我去超市买回来的。</div>
+          <span class="memo-tag">唔该</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月24日 · 20:10</div>
+          <div class="memo-text">下个月第三针。兽医周五打过电话。到时间提前一天把笼子拿出来，让它熟悉一下。</div>
+          <span class="memo-tag">唔该</span>
+        </div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="memo-item">
+        <div class="memo-pin"></div>
+        <div class="memo-body">
+          <div class="memo-date">9月20日 · 18:30</div>
+          <div class="memo-text">那只碗小了，换新的。要浅一点的，它吃饭的时候总是把胡须弄湿。</div>
+          <span class="memo-tag">唔该</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+    <section id="ins" class="page">
+    <div class="head">
+      <div class="back" onclick="go('home')">‹ 返回</div>
+      <span class="head-title">INS</span>
+      <span class="head-sub">PRIVATE</span>
+    </div>
+
+    <!-- 顶栏 -->
+    <div class="ig-topbar">
+      <div class="ig-topbar-name">julian.ho <span class="lock">🔒</span></div>
+      <div class="ig-topbar-icons">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </div>
+    </div>
+
+    <!-- 资料 -->
+    <div class="ig-profile">
+      <div class="ig-avatar">延</div>
+      <div class="ig-stats">
+        <div class="ig-stat"><b>42</b><span>帖子</span></div>
+        <div class="ig-stat"><b>1,208</b><span>关注</span></div>
+        <div class="ig-stat"><b>2.7万</b><span>粉丝</span></div>
+      </div>
+    </div>
+
+    <div class="ig-bio">
+      <div class="ig-bio-n">何瑞延 · Julian</div>
+      <div class="ig-bio-d">Hong Kong · Macau<br>私人帐号，不闲聊。</div>
+      <div class="ig-bio-tag">@wugai_thecat · 唔该的铲屎官</div>
+    </div>
+
+    <div class="ig-btns">
+      <div class="ig-btn">编辑资料</div>
+      <div class="ig-btn">分享主页</div>
+    </div>
+
+    <!-- 精选动态 -->
+    <div class="ig-highlights">
+      <div class="ig-hl"><div class="ig-hl-circle">🐱</div><span>唔该</span></div>
+      <div class="ig-hl"><div class="ig-hl-circle">🐎</div><span>夜叉</span></div>
+      <div class="ig-hl"><div class="ig-hl-circle">🥃</div><span>酒</span></div>
+      <div class="ig-hl"><div class="ig-hl-circle">🎰</div><span>Macau</span></div>
+      <div class="ig-hl"><div class="ig-hl-circle">🚗</div><span>GT3</span></div>
+    </div>
+
+    <!-- Tab -->
+    <div class="ig-tabs">
+      <div class="ig-tab active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.4" y="3.4" width="7.2" height="7.2" rx="1.2"/><rect x="13.4" y="3.4" width="7.2" height="7.2" rx="1.2"/><rect x="3.4" y="13.4" width="7.2" height="7.2" rx="1.2"/><rect x="13.4" y="13.4" width="7.2" height="7.2" rx="1.2"/></svg>
+      </div>
+      <div class="ig-tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg>
+      </div>
+      <div class="ig-tab">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v10M8 10l4 4 4-4M5 20h14"/></svg>
+      </div>
+    </div>
+
+    <!-- 帖子 1 · 和唔该合影 -->
+    <div class="ig-post">
+      <div class="ig-post-head">
+        <div class="ig-post-av">延</div>
+        <div class="ig-post-meta">
+          <div class="ig-post-u">julian.ho <span class="v">V</span></div>
+          <div class="ig-post-loc">半山 · Home</div>
+        </div>
+        <div class="ig-post-more">···</div>
+      </div>
+      <img class="ig-post-img" src="ins_wugai.jpg" alt="">
+      <div class="ig-post-acts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-12 7l-5 2 2-5a8 8 0 1 1 15-4z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3 11 14M22 3l-7 19-4-8-8-4z"/></svg>
+        <svg class="save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+      </div>
+      <div class="ig-post-body">
+        <div class="ig-post-likes">8,204 次赞</div>
+        <div class="ig-post-cap"><b>julian.ho</b>肥猫。
+          <span class="tr">（肥猫。）</span>
+        </div>
+        <div class="ig-post-time">2 小时前</div>
+        <div class="ig-post-cmts">
+          <div class="ig-post-cmt"><b>Y/N</b>唔该明明就不胖！😠</div>
+          <div class="ig-post-cmt"><b>Julian</b>你自己睇下张相。<span class="tr">（你自己看看这张照片。）</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 帖子 2 · 拳击馆 -->
+    <div class="ig-post">
+      <div class="ig-post-head">
+        <div class="ig-post-av">延</div>
+        <div class="ig-post-meta">
+          <div class="ig-post-u">julian.ho <span class="v">V</span></div>
+          <div class="ig-post-loc">中环 · 搏击馆</div>
+        </div>
+        <div class="ig-post-more">···</div>
+      </div>
+           <img class="ig-post-img" src="ins_box.jpg" alt="">
+      <div class="ig-post-acts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-12 7l-5 2 2-5a8 8 0 1 1 15-4z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3 11 14M22 3l-7 19-4-8-8-4z"/></svg>
+        <svg class="save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+      </div>
+      <div class="ig-post-body">
+        <div class="ig-post-likes">5,187 次赞</div>
+        <div class="ig-post-cap"><b>julian.ho</b>练练。</div>
+        <div class="ig-post-time">昨天</div>
+        <div class="ig-post-cmts">
+          <div class="ig-post-cmt"><b>Adrian</b>边个咁惨？<span class="tr">（谁这么惨？）</span></div>
+          <div class="ig-post-cmt"><b>Julian</b>沙包。<span class="tr">（沙包。）</span></div>
+          <div class="ig-post-cmt"><b>Y/N</b>注意安全，别打伤手！</div>
+          <div class="ig-post-cmt"><b>Dominic</b>唔好受伤。<span class="tr">（不要受伤。）</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 帖子 3 · 杨枝甘露 -->
+    <div class="ig-post">
+      <div class="ig-post-head">
+        <div class="ig-post-av">延</div>
+        <div class="ig-post-meta">
+          <div class="ig-post-u">julian.ho <span class="v">V</span></div>
+          <div class="ig-post-loc">中环 · 某甜品店</div>
+        </div>
+        <div class="ig-post-more">···</div>
+      </div>
+            <img class="ig-post-img" src="ins_drink.jpg" alt="">
+      <div class="ig-post-acts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-12 7l-5 2 2-5a8 8 0 1 1 15-4z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3 11 14M22 3l-7 19-4-8-8-4z"/></svg>
+        <svg class="save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+      </div>
+      <div class="ig-post-body">
+        <div class="ig-post-likes">6,432 次赞</div>
+        <div class="ig-post-cap"><b>julian.ho</b>故事序章
+          <span class="tr">（故事序章）</span>
+        </div>
+        <div class="ig-post-time">3 天前</div>
+        <div class="ig-post-cmts">
+          <div class="ig-post-cmt"><b>Y/N</b>那天明明是我先拿到的！</div>
+          <div class="ig-post-cmt"><b>Julian</b>嗯，是你的。<span class="tr">（嗯，是你的。）</span></div>
+          <div class="ig-post-cmt"><b>Adrian</b>YN，佢咁闷你都受？<span class="tr">（YN，他这么闷你都受得了？）</span></div>
+          <div class="ig-post-cmt"><b>Y/N</b>受呀，怎么了</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 帖子 4 · 三条A -->
+    <div class="ig-post">
+      <div class="ig-post-head">
+        <div class="ig-post-av">延</div>
+        <div class="ig-post-meta">
+          <div class="ig-post-u">julian.ho <span class="v">V</span></div>
+          <div class="ig-post-loc">Macau · 贵宾厅</div>
+        </div>
+        <div class="ig-post-more">···</div>
+      </div>
+            <img class="ig-post-img" src="ins_card.jpg" alt="">
+      <div class="ig-post-acts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-12 7l-5 2 2-5a8 8 0 1 1 15-4z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3 11 14M22 3l-7 19-4-8-8-4z"/></svg>
+        <svg class="save" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg>
+      </div>
+      <div class="ig-post-body">
+        <div class="ig-post-likes">9,613 次赞</div>
+        <div class="ig-post-cap"><b>julian.ho</b>三条A，有人畀我嘅花名。
+          <span class="tr">（三条A,有人给我的花名。）</span>
+        </div>
+        <div class="ig-post-time">1 週前</div>
+        <div class="ig-post-cmts">
+          <div class="ig-post-cmt"><b>Y/N</b>太帅啦何大人😋</div>
+          <div class="ig-post-cmt"><b>Adrian</b>挺合适。<span class="tr">（挺合适。）</span></div>
+          <div class="ig-post-cmt"><b>Julian</b>我也覺得<span class="tr">（我也觉得）</span></div>
+          <div class="ig-post-cmt"><b>Dominic</b>花名。<span class="tr">（花名。）</span></div>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
+    <section id="search" class="page">
+    <div class="head">
+      <div class="back" onclick="go('home')">‹ 返回</div>
+      <span class="head-title">搜索</span>
+      <span class="head-sub">最近</span>
+    </div>
+
+    <div class="searchbar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="6.5"/>
+        <path d="M16 16l4.5 4.5"/>
+      </svg>
+      <span>搜索</span>
+    </div>
+
+    <div class="card-t">最近搜索</div>
+    <div class="card" style="padding:4px 0;">
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">澳門勵駿集團最新牌照續期政策<span class="tr">（澳门励骏集团最新牌照续期政策）</span></div>
+        </div>
+        <div class="search-when">2小時前</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">老婆 成日搶我食嘅 正常咩<span class="tr">（老婆 总抢我吃的 正常吗）</span></div>
+        </div>
+        <div class="search-when">5小時前</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">貓糧 邊個牌子 唔發胖<span class="tr">（猫粮 哪个牌子 不发胖）</span></div>
+        </div>
+        <div class="search-when">昨日</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">香港夜總會牌照轉讓流程 2024<span class="tr">（香港夜总会牌照转让流程 2024）</span></div>
+        </div>
+        <div class="search-when">昨日</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">半山 寵物友好 診所<span class="tr">（半山 宠物友好 诊所）</span></div>
+        </div>
+        <div class="search-when">2日前</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">越南峴港港口貨運代理排名<span class="tr">（越南岘港港口货运代理排名）</span></div>
+        </div>
+        <div class="search-when">3日前</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">老婆 將隻貓當仔養 點算<span class="tr">（老婆 把猫当儿子养 怎么办）</span></div>
+        </div>
+        <div class="search-when">3日前</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">貓咪 磨爪 梳化 保護套<span class="tr">（猫咪 磨爪 沙发 保护套）</span></div>
+        </div>
+        <div class="search-when">4日前</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">菲律賓克拉克機場私人飛機入境手續<span class="tr">（菲律宾克拉克机场私人飞机入境手续）</span></div>
+        </div>
+        <div class="search-when">5日前</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">婚戒 男款 鉑金 唔鑲鑽 品牌<span class="tr">（婚戒 男款 铂金 不镶钻 品牌）</span></div>
+        </div>
+        <div class="search-when">上週</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">點樣唔講我愛你但令對方知<span class="tr">（如何不说我爱你但让对方知道）</span></div>
+        </div>
+        <div class="search-when">上週</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">狸花貓 八個月 正常體重<span class="tr">（狸花猫 八个月 正常体重）</span></div>
+        </div>
+        <div class="search-when">上週</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">廟街 1962 土地記錄<span class="tr">（庙街 1962 土地记录）</span></div>
+        </div>
+        <div class="search-when">2週前</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">螺螄粉 味 去除 空氣淨化器<span class="tr">（螺蛳粉 味 去除 空气净化器）</span></div>
+        </div>
+        <div class="search-when">2週前</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">失眠 有咩方法<span class="tr">（失眠 有什么方法）</span></div>
+        </div>
+        <div class="search-when">2週前</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">香港公司法 第622章 股權代持風險<span class="tr">（香港公司法 第622章 股权代持风险）</span></div>
+        </div>
+        <div class="search-when">3週前</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">攬住老婆瞓 手痺 正常咩<span class="tr">（抱着老婆睡 手麻 正常吗）</span></div>
+        </div>
+        <div class="search-when">3週前</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">香港 邊度買 柳州螺螄粉 正宗<span class="tr">（香港 哪里买 柳州螺蛳粉 正宗）</span></div>
+        </div>
+        <div class="search-when">3週前</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">新加坡家族辦公室 稅務豁免 13O<span class="tr">（新加坡家族办公室 税务豁免 13O）</span></div>
+        </div>
+        <div class="search-when">上個月</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">老婆 外家 催生 點樣拒絕<span class="tr">（老婆 娘家 催生 怎么拒绝）</span></div>
+        </div>
+        <div class="search-when">上個月</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">緬甸妙瓦底 園區 最新情況<span class="tr">（缅甸妙瓦底 园区 最新情况）</span></div>
+        </div>
+        <div class="search-when">2個月前</div>
+      </div>
+      <div class="divider"></div>
+
+      <div class="search-item">
+        <div class="search-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg>
+        </div>
+        <div class="search-body">
+          <div class="search-q">點樣 令老婆 少啲發訊息<span class="tr">（如何 让老婆 少发消息）</span></div>
+        </div>
+        <div class="search-when">2個月前</div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="map" class="page">
+    <div class="head"><div class="back" onclick="go('home')">‹ 返回</div><span class="head-title">地图</span><span class="head-sub">定位中</span></div>
+    <div class="mapv"><div class="pin"></div><div class="mapv-label">香港 · 半山</div><div class="mapv-sub" style="bottom:34px;">半山 · 私人别墅 · 常住地</div></div>
+    <div class="card-t">常去地点</div>
+    <div class="card">
+      <div class="row"><div><div class="k">半山别墅</div><div class="s">住所 · 每周 5 次</div></div><div class="v" style="color:#6f6f6f;">0 km</div></div>
+      <div class="row"><div><div class="k">澳门永利皇宫</div><div class="s">贵宾厅 · 每周 3 次</div></div><div class="v" style="color:#6f6f6f;">62 km</div></div>
+      <div class="row"><div><div class="k">中环 · 搏击馆</div><div class="s">每周 2 次 · 私人教练</div></div><div class="v" style="color:#6f6f6f;">3.2 km</div></div>
+      <div class="row"><div><div class="k">跑马地 · 私人马场</div><div class="s">「夜叉」</div></div><div class="v" style="color:#6f6f6f;">6.8 km</div></div>
+      <div class="row"><div><div class="k">何家老宅</div><div class="s">半山 · 家宴</div></div><div class="v" style="color:#6f6f6f;">2.4 km</div></div>
+    </div>
+    <div class="card-t">近期出行</div>
+    <div class="card">
+      <div class="row"><div><div class="k">澳门</div><div class="s">本周 3 次 · 私人飞机</div></div><div class="v" style="color:#6f6f6f;">3 次</div></div>
+      <div class="row"><div><div class="k">新加坡</div><div class="s">周五 · 商务</div></div><div class="v" style="color:#6f6f6f;">已订</div></div>
+      <div class="row"><div><div class="k">曼谷</div><div class="s">下月 3 日 · 东南亚线</div></div><div class="v" style="color:#6f6f6f;">已订</div></div>
+      <div class="row"><div><div class="k">巴黎</div><div class="s">10月 12日 · 酒庄考察</div></div><div class="v" style="color:#6f6f6f;">已订</div></div>
+    </div>
+  </section>
+
+  <section id="settings" class="page">
+    <div class="head"><div class="back" onclick="go('home')">‹ 返回</div><span class="head-title">设置</span><span class="head-sub">PRIVATE</span></div>
+    <div class="profile"><div class="profile-av">延</div><div class="profile-n">何瑞延</div><div class="profile-e">HO JULIAN</div></div>
+    <div class="card" style="padding:4px 0;">
+      <div class="set-item"><div class="set-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="6" y="2.5" width="12" height="19" rx="3"/><path d="M10.5 5.5h3"/></svg></div><div><div class="set-l">iPhone 16 Pro Max</div><div class="set-s">iOS 26.0 · 序号 J8K3X7L2M9P4</div></div></div>
+      <div class="divider"></div>
+      <div class="set-item"><div class="set-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V6.5A2.5 2.5 0 0 1 6.5 4H9M15 4h2.5A2.5 2.5 0 0 1 20 6.5V9M20 15v2.5a2.5 2.5 0 0 1-2.5 2.5H15M9 20H6.5A2.5 2.5 0 0 1 4 17.5V15"/></svg></div><div><div class="set-l">面容 ID</div><div class="set-s">已启用</div></div><div class="set-v">开启</div></div>
+      <div class="divider"></div>
+      <div class="set-item"><div class="set-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2.4"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><div><div class="set-l">锁屏密码</div><div class="set-s">6 位数字 · 0730</div></div><div class="set-v">已设置</div></div>
+      <div class="divider"></div>
+      <div class="set-item"><div class="set-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 4v8l6 3"/></svg></div><div><div class="set-l">查找我的 iPhone</div><div class="set-s">位置共享：家人</div></div><div class="set-v">开启</div></div>
+      <div class="divider"></div>
+      <div class="set-item"><div class="set-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="6" width="18" height="12" rx="2.6"/><path d="M7 10h3M7 14h6"/></svg></div><div><div class="set-l">双卡双待</div><div class="set-s">+853 澳门 · +852 香港</div></div><div class="set-v">开启</div></div>
+      <div class="divider"></div>
+      <div class="set-item"><div class="set-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z"/></svg></div><div><div class="set-l">紧急联系人</div><div class="set-s">江晏寧</div></div><div class="set-v">已设置</div></div>
+      <div class="divider"></div>
+      <div class="set-item"><div class="set-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><path d="M3 20c0-3 2.7-5.5 6-5.5s6 2.5 6 5.5"/><path d="M18 8h3M19.5 6.5v3"/></svg></div><div><div class="set-l">唔该 · 喂食提醒</div><div class="set-s">每天 08:00 · 20:00</div></div><div class="set-v">开启</div></div>
+    </div>
+    <div class="warn">此设备为何瑞延私人使用<br>未经授权请勿查看</div>
+  </section>
+
+</div>
+
+<script>
+function go(id){
+  const cur = document.querySelector('.page.active');
+  const next = document.getElementById(id);
+  if(!next || cur === next) return;
+  if(cur) cur.classList.remove('active');
+  next.classList.add('active');
+  next.scrollTop = 0;
+
+  cancelIntercept();
+  if(id === 'wechat'){ triggerIntercept('wechat'); }
+  else if(interceptMap[id]){ triggerIntercept(id); }
+}
+function switchWxTab(tab){
+  document.querySelectorAll('.wx-tab').forEach(t => { t.classList.toggle('active', t.dataset.tab === tab); });
+  document.getElementById('wxPanelChats').classList.toggle('active', tab === 'chats');
+  document.getElementById('wxPanelMoments').classList.toggle('active', tab === 'moments');
+
+  cancelIntercept();
+  if(tab === 'moments'){ triggerIntercept('moments'); }
+  else if(tab === 'chats'){ triggerIntercept('wechat'); }
+}
+function pad(n){ return n < 10 ? '0'+n : ''+n; }
+function tick(){
+  const d = new Date();
+  const t = pad(d.getHours()) + ':' + pad(d.getMinutes());
+  const el1 = document.getElementById('lockTime');
+  const el2 = document.getElementById('sbTime');
+  const el3 = document.getElementById('homeGreet');
+  if(el1) el1.textContent = t;
+  if(el2) el2.textContent = t;
+  if(el3) el3.textContent = t;
+  const wk = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][d.getDay()];
+  const ds = d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日 ' + wk;
+  const ld = document.getElementById('lockDate');
+  const hd = document.getElementById('homeDate');
+  if(ld) ld.textContent = ds;
+  if(hd) hd.textContent = d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日 · ' + wk;
+}
+tick();
+setInterval(tick, 1000);
+
+const PASSWORD = '0730';
+let input = '';
+let triggered = false;
+const dots = document.querySelectorAll('#dots span');
+const lockErr = document.getElementById('lockErr');
+const lockWatch = document.getElementById('lockWatch');
+const lockscreen = document.getElementById('lockscreen');
+
+function renderDots(){ dots.forEach((s,i) => s.classList.toggle('on', i < input.length)); }
+
+function pressKey(k){
+  if(k === 'del'){ input = input.slice(0, -1); renderDots(); lockErr.classList.remove('show'); return; }
+  if(input.length >= 4) return;
+  input += k;
+  renderDots();
+  if(!triggered){
+    triggered = true;
+    lockWatch.classList.add('show');
+    setTimeout(() => lockWatch.classList.remove('show'), 2200);
+    setTimeout(() => {
+      if(lockscreen.classList.contains('active')){
+        showLockMsg(lockMsgFirst);
+      }
+    }, 2200);
+  }
+  if(input.length === 4){
+    setTimeout(() => {
+      if(input === PASSWORD){ unlock(); }
+      else{
+        lockErr.textContent = '密碼錯誤';
+        lockErr.classList.add('show');
+        lockscreen.classList.add('shake');
+        setTimeout(() => { lockscreen.classList.remove('shake'); input = ''; renderDots(); }, 520);
+        setTimeout(() => {
+          lockErr.classList.remove('show');
+          const cfg = lockMsgErrors[Math.floor(Math.random() * lockMsgErrors.length)];
+          showLockMsg(cfg);
+        }, 1500);
+      }
+    }, 130);
+  }
+}
+document.getElementById('keypad').addEventListener('click', e => {
+  const key = e.target.closest('.key');
+  if(!key || key.classList.contains('blank')) return;
+  pressKey(key.dataset.k);
+});
+document.addEventListener('keydown', e => {
+  if(!lockscreen.classList.contains('active')) return;
+  if(/^[0-9]$/.test(e.key)) pressKey(e.key);
+  if(e.key === 'Backspace') pressKey('del');
+});
+function unlock(){ input = ''; renderDots(); lockErr.classList.remove('show'); go('home'); }
+
+/* =========================================================
+   远程拦截
+   ========================================================= */
+const interceptMap = {
+  wechat:   { delay: 2000, text: '查岗呀？问我就得，使乜偷偷摸摸。', tr: '（查岗啊？问我就行，何必偷偷摸摸。）', btn: '哦' },
+  moments:  { delay: 3000, text: '你睇得咁开心，我食醋。', tr: '（你看得这么开心，我吃醋。）', btn: '嘿嘿' },
+  wallet:   { delay: 3000, text: '睇我钱？我嘅就系你嘅，唔使睇。', tr: '（看我钱？我的就是你的，不用看。）', btn: '知道啦' },
+  search:   { delay: 3000, text: 'search history 都翻？八卦。', tr: '（搜索记录都翻？八卦。）', btn: '看看咯' },
+  calls:    { delay: 1000, text: '睇紧边个？', tr: '（在看谁？）', btn: '没看谁' },
+  calendar: { delay: 2000, text: '想知我几时有空？', tr: '（想知道我什么时候有空？）', btn: '嗯' },
+  memo:     { delay: 3000, text: '备忘录都睇，你真系好得闲。', tr: '（备忘录都看，你真的很闲。）', btn: '嗯' },
+  ins:      { delay: 5000, text: '睇我相？本人喺度，你过嚟。', tr: '（看我照片？本人在，你过来。）', btn: '知道啦' }
+};
+
+const intercepted = {};
+let interceptTimer = null;
+
+function triggerIntercept(key){
+  if(intercepted[key]) return;
+  const cfg = interceptMap[key];
+  if(!cfg) return;
+  clearTimeout(interceptTimer);
+  interceptTimer = setTimeout(() => {
+    if(!isStillOnPage(key)) return;
+    showIntercept(cfg);
+    intercepted[key] = true;
+  }, cfg.delay);
+}
+
+function isStillOnPage(key){
+  const active = document.querySelector('.page.active');
+  if(!active) return false;
+  const id = active.id;
+  const momentsOn = document.getElementById('wxPanelMoments').classList.contains('active');
+
+  if(key === 'moments'){ return id === 'wechat' && momentsOn; }
+  if(key === 'wechat'){ return id === 'wechat' && !momentsOn; }
+  return id === key;
+}
+
+function showIntercept(cfg){
+  document.getElementById('icText').textContent = cfg.text;
+  const trEl = document.getElementById('icTr');
+  if(cfg.tr){ trEl.textContent = cfg.tr; trEl.style.display = 'block'; }
+  else{ trEl.style.display = 'none'; }
+  document.getElementById('icBtn').textContent = cfg.btn;
+
+  const el = document.getElementById('intercept');
+  el.classList.add('show');
+
+  if(navigator.vibrate) navigator.vibrate([0, 20, 40, 20]);
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(AC){
+      if(!window.__audioCtx) window.__audioCtx = new AC();
+      const ctx = window.__audioCtx;
+      if(ctx.state === 'suspended') ctx.resume();
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 440;
+      o.type = 'triangle';
+      g.gain.setValueAtTime(0.05, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      o.start(); o.stop(ctx.currentTime + 0.4);
+    }
+  }catch(e){}
+}
+
+function closeIntercept(){
+  document.getElementById('intercept').classList.remove('show');
+}
+
+function cancelIntercept(){
+  clearTimeout(interceptTimer);
+}
+
+/* =========================================================
+   锁屏弹窗
+   ========================================================= */
+const lockMsgFirst = {
+  text: '老婆，睇紧咩呀？',
+  tr: '（老婆，看什么呢？）',
+  btn: '确定'
+};
+
+const lockMsgErrors = [
+  { text: '我生日你都唔记得？', tr: '（我生日你都记不住？）', btn: '我记得！' },
+  { text: '你系咪我老婆嚟㗎？', tr: '（你是不是我老婆啊？）', btn: '是啦是啦' },
+  { text: '就四个数字，你都错。', tr: '（就四个数字，你都能错。）', btn: '……' },
+  { text: '手咁笨，仲想查我岗？', tr: '（手这么笨，还想查我的岗？）', btn: '哼' }
+];
+
+function showLockMsg(cfg){
+  document.getElementById('lmText').textContent = cfg.text;
+  const trEl = document.getElementById('lmTr');
+  if(cfg.tr){ trEl.textContent = cfg.tr; trEl.style.display = 'block'; }
+  else{ trEl.style.display = 'none'; }
+  document.getElementById('lmBtn').textContent = cfg.btn || '确定';
+
+  document.getElementById('lockMsg').classList.add('show');
+
+  if(navigator.vibrate) navigator.vibrate([0, 20, 40, 20]);
+  try{
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(AC){
+      if(!window.__audioCtx) window.__audioCtx = new AC();
+      const ctx = window.__audioCtx;
+      if(ctx.state === 'suspended') ctx.resume();
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 440;
+      o.type = 'triangle';
+      g.gain.setValueAtTime(0.05, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+      o.start(); o.stop(ctx.currentTime + 0.4);
+    }
+  }catch(e){}
+}
+
+function closeLockMsg(){
+  document.getElementById('lockMsg').classList.remove('show');
+}
+/* =========================================================
+   朋友圈 / INS 点赞
+   ========================================================= */
+
+// 朋友圈：自动给每条插入点赞栏
+document.querySelectorAll('.moment-cmts').forEach(cmts => {
+  const acts = document.createElement('div');
+  acts.className = 'moment-actions';
+  acts.innerHTML = `
+    <div class="moment-btn" onclick="toggleLike(this)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9-9a5 5 0 0 1 9-3 5 5 0 0 1 9 3c-2 4.5-9 9-9 9z"/></svg>
+      <span>赞</span>
+    </div>
+    <div class="moment-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-12 7l-5 2 2-5a8 8 0 1 1 15-4z"/></svg>
+      <span>评论</span>
+    </div>
+  `;
+  cmts.parentNode.insertBefore(acts, cmts);
+});
+
+function toggleLike(el){
+  el.classList.toggle('liked');
+}
+
+// INS：把第一个图标（心）改成可点击
+document.querySelectorAll('.ig-post-acts').forEach(acts => {
+  const svgs = acts.querySelectorAll('svg');
+  if(svgs.length < 2) return;
+  const heart = svgs[0];
+  heart.classList.add('ig-heart');
+  heart.addEventListener('click', function(){
+    this.classList.toggle('liked');
+  });
+});
+/* =========================================================
+   微信数据
+   ========================================================= */
+const chats = {
+  jiang: {
+    name: '江晏寧',
+    tag: '老婆',
+    avatar: '宁',
+    gold: true,
+    pinned: true,
+    time: '23:47',
+    preview: '求求你了',
+    status: '在線',
+    messages: [
+      { sys: '昨天 9:20' },
+      { me: true, t: '做咩？', tr: '干嘛？' },
+      { t: '看手机' },
+      { me: true, t: '又睇，眼睛仲要唔要？', tr: '又看，眼睛还要不要了？' },
+      { t: '你以前不也通宵' },
+      { me: true, t: '我而家唔通宵。', tr: '我现在不通宵。' },
+      { t: '因为什么' },
+      { me: true, t: '因为要返屋企。', tr: '因为要回家。' },
+      { t: '你今天怎么这么乖' },
+      { me: true, t: '我边日唔乖？', tr: '我哪天不乖？' },
+      { t: '你哪天都不乖' },
+
+      { sys: '今天 10:05' },
+      { me: true, t: '几点返嚟？', tr: '几点回来？' },
+      { t: '不知道' },
+      { me: true, t: '畀个大概我。', tr: '给我个大概。' },
+      { t: '九十点吧' },
+      { me: true, t: '我去接你。', tr: '我去接你。' },
+      { t: '不用' },
+      { me: true, t: '我去接。', tr: '我去接。' },
+      { t: '我说不用' },
+      { me: true, t: '我话我去。', tr: '我说我去。' },
+      { t: '你好烦' },
+      { me: true, t: '老婆。' },
+      { t: '……' },
+      { t: '那你来吧' },
+
+      { sys: '今天 17:30' },
+      { me: true, t: '今晚有冇想食嘅？', tr: '今晚有没有想吃的？' },
+      { t: '没有' },
+      { me: true, t: '咁我畀厨房整你上次话好食嗰个。', tr: '那我让厨房做你上次说好吃的那个。' },
+      { t: '可以' },
+      { me: true, t: '嗯。' },
+      { t: '你今天怎么这么闲' },
+      { me: true, t: '今日唔想做嘢。', tr: '今天不想做事。' },
+      { t: '怎么了' },
+      { me: true, t: '挂住你。', tr: '想你。' },
+      { t: '……' },
+      { me: true, t: '讲嘢呀。', tr: '说话啊。' },
+      { t: '我也想你' },
+
+      { sys: '今天 19:00' },
+      { t: '我不等你了先吃了' },
+      { me: true, t: '你食。', tr: '你吃。' },
+      { t: '你不生气？' },
+      { me: true, t: '我生咩气。', tr: '我生什么气。' },
+      { t: '你以前不是不喜欢我先吃吗' },
+      { me: true, t: '我边有，唔好屈我，你饿就先食，唔好等我。', tr: '我哪有，别冤枉我，你饿就先吃，别等我。' },
+      { t: '你是不是在外面干了什么对不起我的事' },
+      { me: true, t: '……？' },
+
+      { sys: '今天 21:40' },
+      { me: true, t: '到屋企。', tr: '到家了。' },
+      { t: '进来呗' },
+      { me: true, t: '开门。' },
+      { t: '你自己进来' },
+      { me: true, t: '……你锁咗门。', tr: '……你锁了。' },
+      { t: '哦' },
+      { me: true, t: '何太。' },
+      { t: '嗯' },
+      { me: true, t: '开门。' },
+      { t: '求我' },
+      { me: true, t: '……你系咪有病？', tr: '……你是不是有病？' },
+      { t: '求我嘛' },
+      { me: true, t: '……求下你喇。', tr: '……求求你了。' },
+      { t: '好乖♡＾▽＾♡' }
+    ]
+  },
+
+  wugai: {
+    name: '唔该',
+    tag: '猫',
+    avatar: '🐱',
+    time: '08:14',
+    preview: '喵',
+    status: '在線',
+    messages: [
+      { sys: '今天 08:14' },
+      { t: '喵喵喵' },
+      { t: '我饿咗，你再唔起身，我就踩你块面。', tr: '我饿了，你再不起床，我就踩你脸。' },
+      { me: true, t: '……' },
+      { me: true, t: '你有病？', tr: '你有病？' },
+      { t: '你至有病。', tr: '你才有病。' },
+      { t: '你放咗我罐罐去边？我搵咗成个朝早。', tr: '你把我罐头放哪了？我找了一个早上。' },
+      { me: true, t: '你自己去搵，喺厨房。', tr: '你自己去找，就在厨房。' },
+      { t: '你帮我搵，我系一只猫。', tr: '你帮我找，我是一只猫。' },
+      { me: true, t: '自己去搵。', tr: '自己去找。' },
+      { t: '你系我老豆，你点可以咁！', tr: '你是我爸，你怎么这样！' },
+      { me: true, t: '你系佢阿妈呢，自己去搵。', tr: '你还是它妈呢，自己去找。' },
+      { t: '喵。' }
+    ]
+  },
+
+  brother2: {
+    name: '何瑞珩',
+    tag: '二佬',
+    avatar: '珩',
+    time: '17:47',
+    preview: '真出事了，先跟我讲',
+    status: '在線',
+    messages: [
+      { sys: '昨天 09:20' },
+      { t: '周五过嚟。', tr: '周五过来。' },
+      { me: true, t: '讲咗唔嚟。', tr: '说了不来。' },
+      { t: '方案我做都做好咗。', tr: '方案我都做好了。' },
+      { me: true, t: '嗰系你嘅事。', tr: '那是你的事。' },
+      { t: '三条A。' },
+      { me: true, t: '叫咩叫。', tr: '叫什么叫。' },
+      { t: '你最近脾气系咪越嚟越差。', tr: '你最近脾气是不是越来越差了。' },
+      { me: true, t: '冇。', tr: '没有。' },
+      { t: '有，以前你仲会敷衍我两句。', tr: '有，以前你还会敷衍我两句。' },
+      { me: true, t: '而家懒得敷衍。', tr: '现在懒得敷衍。' },
+      { t: '……' },
+      { t: '咁你周五到底嚟唔嚟。', tr: '那你周五到底来不来。' },
+      { me: true, t: '睇情况。', tr: '看情况。' },
+      { t: '咩叫睇情况。', tr: '什么叫看情况。' },
+      { me: true, t: '就系睇情况。', tr: '就是看情况。' },
+
+      { sys: '昨天 12:14' },
+      { t: '夜总会嗰个联名你想清楚未。', tr: '夜总会那个联名你想清楚没。' },
+      { me: true, t: '唔做。', tr: '不做。' },
+      { t: '点解。', tr: '为什么。' },
+      { me: true, t: '唔啱。', tr: '不合适。' },
+      { t: '边度唔啱。', tr: '哪里不合适。' },
+      { me: true, t: '你嗰边做嘅系明星，我嗰边做嘅系赌客。', tr: '你那边做的是明星，我那边做的是赌客。' },
+      { me: true, t: '八竿子打唔着。', tr: '八竿子打不着。' },
+      { t: '嗰系你唔识。', tr: '那是你不懂。' },
+      { me: true, t: '咁你讲下边度识。', tr: '那你说说哪里懂。' },
+      { t: '品牌联名系打开新嘅客户群。', tr: '品牌联名是打开新的客户群。' },
+      { me: true, t: '打开咩客户群。', tr: '打开什么客户群。' },
+      { t: '你嗰个态度倾咩生意。', tr: '你那个态度谈什么生意。' },
+      { me: true, t: '唔倾喇。', tr: '不谈了。' },
+      { t: '……' },
+
+      { sys: '今天 13:05' },
+      { t: '澳门有个影视项目想借你场地。', tr: '澳门有个影视项目想借你场地。' },
+      { me: true, t: '咩项目。', tr: '什么项目。' },
+      { t: '赌场题材。' },
+      { me: true, t: '唔借。', tr: '不借。' },
+      { t: '点解。', tr: '为什么。' },
+      { me: true, t: '你嗰班明星入去拍拍拍，我嗰边客人仲做唔做生意。', tr: '你那帮明星进去拍拍拍，我那边客人还做不做生意。' },
+      { t: '我可以协调时间。', tr: '我可以协调时间。' },
+      { me: true, t: '唔借。', tr: '不借。' },
+      { t: '三条A。' },
+      { me: true, t: '叫我都没有用。', tr: '叫我也没有用。' },
+      { t: '我可以畀你分成。', tr: '我可以给你分成。' },
+      { me: true, t: '成交。', tr: '成交。' },
+
+      { sys: '今天 17:47' },
+      { t: '讲正经嘅。', tr: '说正经的。' },
+      { t: '东南亚嗰条线，你最近动得好频繁。', tr: '东南亚那条线，你最近动得很频繁。' },
+      { me: true, t: '有事。', tr: '有事。' },
+      { t: '咩事。', tr: '什么事。' },
+      { me: true, t: '唔方便讲。', tr: '不方便讲。' },
+      { t: '同我讲都唔方便？', tr: '跟我说也不方便？' },
+      { me: true, t: '嗯。' },
+      { t: '咁你自己把握。', tr: '那你自己把握。' },
+      { me: true, t: '知道。' },
+      { t: '真出事咗，先同我讲。', tr: '真出事了，先跟我讲。' },
+      { me: true, t: '嗯。' }
+    ]
+  },
+
+  brother1: {
+    name: '何瑞璋',
+    tag: '大哥',
+    avatar: '璋',
+    time: '21:40',
+    preview: '我话呢个叫有节制',
+    status: '最後上線 21:45',
+    messages: [
+      { sys: '今天 15:30' },
+      { me: true, t: '大哥，季尾盘数出咗，靓仔过上个quarter。我发咗详细报告畀你，你睇下有咩问题。', tr: '大哥，季度结算出来了，比上个季度漂亮。我发了详细报告给你，你看看有什么问题。' },
+      { t: '嗯。', tr: '嗯。' },
+      { me: true, t: '喂，大哥，你「嗯」系咩意思？我盘数靓咗喎！你至少赞我一句啦！', tr: '喂，大哥，你「嗯」是什么意思？我业绩好看了诶！你至少夸我一句吧！' },
+      { t: '收到。', tr: '收到。' },
+      { me: true, t: '……' },
+      { t: '下季继续。', tr: '下季继续。' },
+      { me: true, t: '你话嘢真系悭水悭力，我一页纸嘅报告换你四个字。', tr: '你说话真是省水省力，我一页纸的报告换你四个字。' },
+
+      { sys: '今天 18:20' },
+      { me: true, t: '大哥，我琴晚喺码头同人倾唔掂，郁咗手。对面有个人断咗条肋骨，而家喺医院。', tr: '大哥，我昨晚在码头跟人谈不拢，动手了。对面有个人断了条肋骨，现在在医院。' },
+      { t: '对方咩背景？', tr: '对方什么背景？' },
+      { me: true, t: '澳门一个叠码仔，跟陈海嗰边嘅。', tr: '澳门一个叠码仔，跟陈海那边的。' },
+      { t: '我打个电话。你唔好再郁手。', tr: '我打个电话。你不要再动手。' },
+      { me: true, t: '得。但系大哥，佢哋真系好串，你唔觉得咩？', tr: '行。但是大哥，他们真的很嚣张，你不觉得吗？' },
+      { t: '觉得。但系打咗就系麻烦。我哋系做嘢，唔系出气。', tr: '觉得。但是打了就是麻烦。我们是做事，不是出气。' },
+      { me: true, t: '知道。下次我会做得干净啲。', tr: '知道。下次我会做得干净点。' },
+      { t: '唔好有下次。', tr: '不要有下次。' },
+
+      { sys: '今天 21:40' },
+      { me: true, t: '大哥，你今年生日想要咩。', tr: '大哥，你今年生日想要什么。' },
+      { t: '你少惹点事，就系最好嘅礼物。', tr: '你少惹点事，就是最好的礼物。' },
+      { me: true, t: '咁我唔送喇。', tr: '那我不送了。' },
+      { t: '你旧年送嘅钢笔已经够喇，嗰支我仲未用坏。', tr: '你去年送的钢笔已经够了，那支我还没用坏。' },
+      { me: true, t: '你用一支笔用两年？', tr: '你用一支笔用两年？' },
+      { t: '用五年都冇问题。', tr: '用五年也没问题。' },
+      { me: true, t: '大哥。' },
+      { me: true, t: '你呢个人真系好无聊。', tr: '你这个人真的很无聊。' },
+      { t: '呢个叫有节制。', tr: '这叫有节制。' },
+      { me: true, t: '呢个叫抠。', tr: '这叫抠。' },
+      { t: '你再讲一次。', tr: '你再说一遍。' },
+      { me: true, t: '我话呢个叫有节制。', tr: '我说这叫有节制。' }
+    ]
+  },
+
+  sister: {
+    name: '何瑞儀',
+    tag: '大姊',
+    avatar: '儀',
+    time: '21:15',
+    preview: '好',
+    status: '在線',
+    messages: [
+      { sys: '今天 11:20' },
+      { t: '上次慈善晚宴，你系咪又冇嚟。', tr: '上次慈善晚宴，你是不是又没来。' },
+      { me: true, t: '嗰日喺曼谷。', tr: '那天在曼谷。' },
+      { t: '我知你喺曼谷。', tr: '我知道你在曼谷。' },
+      { t: '但晚宴系提前半个月通知嘅。', tr: '但晚宴是提前半个月通知的。' },
+      { me: true, t: '我改唔到航班。', tr: '我改不了航班。' },
+      { t: '你系唔嚟。', tr: '你是不想来。' },
+      { me: true, t: '……姐。' },
+      { t: '阿延。' },
+      { t: '你系咪嫌嗰种场合烦。', tr: '你是不是嫌那种场合烦。' },
+      { me: true, t: '嗯。' },
+      { t: '我知你烦，但你都系何家嘅人。', tr: '我知道你烦，但你也是何家的人。' },
+      { me: true, t: '下次去。', tr: '下次去。' },
+
+      { sys: '今天 14:05' },
+      { t: '画廊嗰个新展，你帮我看咗没。', tr: '画廊那个新展，你帮我看了没。' },
+      { me: true, t: '睇咗。', tr: '看了。' },
+      { t: '点样。', tr: '怎么样。' },
+      { me: true, t: '唔识。', tr: '不懂。' },
+      { t: '你就唔可以讲两句好听话。', tr: '你就不能说点好听的。' },
+      { me: true, t: '我睇唔明嘅嘢，你要我讲好听话我都讲唔出。', tr: '我看不懂的东西，你要我说好听我也说不出来。' },
+      { t: '……你呢个人。', tr: '……你这个人。' },
+      { me: true, t: '但场地唔错。', tr: '但场地不错。' },
+      { t: '嗰系赞我咩。', tr: '那是夸我吗。' },
+      { me: true, t: '系赞场地。', tr: '是夸场地。' },
+      { t: '……' },
+
+      { sys: '今天 21:15' },
+      { t: '你最近系咪瘦咗。', tr: '你最近是不是瘦了。' },
+      { me: true, t: '冇。', tr: '没有。' },
+      { t: '相入面睇落瘦。', tr: '照片里看着瘦。' },
+      { me: true, t: '嗰系角度。', tr: '那是角度。' },
+      { t: '你系咪又唔好好食饭。', tr: '你是不是又不好好吃饭。' },
+      { me: true, t: '我好忙。', tr: '我很忙。' },
+      { t: '忙都系借口。', tr: '忙也是借口。' },
+      { t: '我畀老宅嘅厨房煲汤送过去。', tr: '我让老宅的厨房给你送汤。' },
+      { me: true, t: '唔使。', tr: '不用。' },
+      { t: '送。' },
+      { me: true, t: '……' },
+      { t: '送去你公司定屋企。', tr: '送去你公司还是家里。' },
+      { me: true, t: '屋企。', tr: '家里。' },
+      { t: '好。' }
+    ]
+  },
+
+  father: {
+    name: '何鴻謙',
+    tag: '老豆',
+    avatar: '謙',
+    time: '23:05',
+    preview: '行了，睡吧',
+    status: '最後上線 23:10',
+    messages: [
+      { sys: '今天 16:20' },
+      { t: '你嗰个赌场，最近点样。', tr: '你那个赌场，最近怎么样。' },
+      { me: true, t: '仲得。', tr: '还行。' },
+      { t: '仲得系几个意思。', tr: '还行是几个意思。' },
+      { me: true, t: '稳。', tr: '稳。' },
+      { t: '稳就好。', tr: '稳就好。' },
+      { t: '呢条路唔好行。', tr: '这条路不好走。' },
+      { t: '你比我清楚。', tr: '你比我清楚。' },
+      { me: true, t: '嗯。' },
+      { t: '出咗事，你大哥帮到你嘅有限。', tr: '出了事，你大哥能帮你的有限。' },
+      { t: '你自己心里有数。', tr: '你自己心里有数。' },
+      { me: true, t: '知道。' },
+      { t: '唔好畀你妈喺地下担心。', tr: '别让你妈在地下担心。' },
+      { me: true, t: '……好。', tr: '……好。' },
+
+      { sys: '今天 21:10' },
+      { t: '你大哥最近系咪又瘦咗。', tr: '你大哥最近是不是又瘦了。' },
+      { me: true, t: '唔知。', tr: '不知道。' },
+      { t: '你都唔劝下佢。', tr: '你也不劝劝他。' },
+      { me: true, t: '我劝唔动。', tr: '我劝不动。' },
+      { t: '……' },
+      { t: '你哋几兄弟。', tr: '你们兄弟几个。' },
+      { t: '一个比一个犟。', tr: '一个比一个犟。' },
+      { me: true, t: '随你。', tr: '随你。' },
+      { t: '我呢个脾气系庙街练出嚟嘅。', tr: '我这脾气是庙街练出来的。' },
+      { t: '你哋几个系养出来嘅。', tr: '你们几个是养出来的。' },
+      { me: true, t: '……' },
+      { t: '得喇，唔讲喇。', tr: '行了，不说了。' },
+      { t: '早啲瞓。', tr: '早点睡。' },
+
+      { sys: '今天 23:05' },
+      { me: true, t: '老豆。', tr: '老豆。' },
+      { t: '嗯。' },
+      { me: true, t: '你身体点样。', tr: '你身体怎么样。' },
+      { t: '我身体比你想象嘅好。', tr: '我身体比你想象的好。' },
+      { me: true, t: '……' },
+      { t: '你系关心我。', tr: '你这是关心我。' },
+      { me: true, t: '嗯。' },
+      { t: '稀奇。', tr: '稀奇。' },
+      { me: true, t: '……' },
+      { t: '得喇，瞓啦。', tr: '行了，睡吧。' }
+    ]
+  },
+
+  driver: {
+    name: '司机',
+    tag: '',
+    avatar: '司',
+    time: '19:10',
+    preview: '收到',
+    status: '最後上線 19:15',
+    messages: [
+      { sys: '今天 06:30' },
+      { me: true, t: '过嚟。', tr: '过来。' },
+      { t: '延哥，楼下。', tr: '延哥，楼下。' },
+      { me: true, t: '嗯。' },
+      { t: '今日去公司定系去机场。', tr: '今天去公司还是去机场。' },
+      { me: true, t: '公司。', tr: '公司。' },
+      { t: '收到。' },
+      { me: true, t: '到楼下掣一下喇叭。', tr: '到楼下按一下喇叭。' },
+      { t: '好嘅。', tr: '好的。' },
+
+      { sys: '今天 07:00' },
+      { me: true, t: '粥送到未？', tr: '粥送到了？' },
+      { t: '送到咗，放咗喺门口。', tr: '送到了，放在了门口。' },
+      { me: true, t: '佢拎咗未。', tr: '她拿了吗。' },
+      { t: '太太开门拎咗。', tr: '太太开门拿了。' },
+      { me: true, t: '讲咗咩。', tr: '说了什么。' },
+      { t: '太太话「多谢」。', tr: '太太说「谢谢」。' },
+      { me: true, t: '嗯。' },
+
+      { sys: '今天 15:40' },
+      { t: '延哥，到咗。', tr: '延哥，到了。' },
+      { me: true, t: '嗯。' },
+      { t: '听日几点嚟接。', tr: '明天几点来接。' },
+      { me: true, t: '下昼四点。', tr: '下午四点。' },
+      { t: '好嘅。', tr: '好的。' },
+      { me: true, t: '到咗唔使叫我，喺门口等。', tr: '到了不用叫我，在门口等。' },
+      { t: '知道。' },
+
+      { sys: '今天 19:10' },
+      { me: true, t: '返半山。', tr: '回半山。' },
+      { t: '而家过去？', tr: '现在过去？' },
+      { me: true, t: '嗯。' },
+      { t: '二十分钟到。', tr: '二十分钟到。' },
+      { me: true, t: '路上经过花店停一下。', tr: '路上经过花店停一下。' },
+      { t: '边间。', tr: '哪家。' },
+      { me: true, t: '随便，有玫瑰就得。', tr: '随便，有玫瑰就行。' },
+      { t: '收到。' }
+    ]
+  },
+
+  manager: {
+    name: '赌场经理',
+    tag: '澳门',
+    avatar: '经',
+    time: '14:20',
+    preview: '收到',
+    status: '最後上線 14:25',
+    messages: [
+      { sys: '今天 09:12' },
+      { t: '延哥，早。', tr: '延哥，早。' },
+      { t: '寻晚三号厅流水出咗。', tr: '昨晚三号厅流水出来了。' },
+      { t: '比上个月同期高咗两成。', tr: '比上个月同期高了两成。' },
+      { me: true, t: '边几个客。', tr: '哪几个客。' },
+      { t: '主要系新加坡过嚟嗰三位。', tr: '主要是新加坡过来的那三位。' },
+      { me: true, t: '王生嗰个？', tr: '王先生那个？' },
+      { t: '唔系，另一个团。', tr: '不是，另一个团。' },
+      { me: true, t: '查过未。', tr: '查过没有。' },
+      { t: '查过，背景干净。', tr: '查过了，背景干净。' },
+      { me: true, t: '嗯。' },
+      { t: '详细报表send咗畀你。', tr: '详细报表发给你了。' },
+      { me: true, t: '睇到。', tr: '看到了。' },
+
+      { sys: '今天 11:30' },
+      { t: '延哥，有位客人想同你见一面。', tr: '延哥，有位客人想跟你见一面。' },
+      { me: true, t: '边个。', tr: '谁。' },
+      { t: '马来西亚过嚟嘅。', tr: '马来西亚过来的。' },
+      { t: '话想请你帮佢引荐一下航运嗰边。', tr: '说是想请你帮忙引荐一下航运那边。' },
+      { me: true, t: '唔引荐。', tr: '不引荐。' },
+      { t: '佢话价钱好倾。', tr: '他说价格好谈。' },
+      { me: true, t: '唔引荐。', tr: '不引荐。' },
+      { t: '明白。', tr: '明白。' },
+      { me: true, t: '下次呢啲唔好报。', tr: '下次这种别报。' },
+      { t: '收到。' },
+
+      { sys: '今天 14:20' },
+      { t: '延哥，贵宾厅嘅新装修方案出咗。', tr: '延哥，贵宾厅的新装修方案出来了。' },
+      { t: '设计师问我几时入场。', tr: '设计师问我什么时候能进场。' },
+      { me: true, t: '下个月。', tr: '下个月。' },
+      { t: '边一号。', tr: '哪一号。' },
+      { me: true, t: '十五号。', tr: '十五号。' },
+      { t: '好嘅。', tr: '好的。' },
+      { me: true, t: '三号厅暂时唔好郁。', tr: '三号厅暂时别动。' },
+      { t: '装修方案里面包含三号厅。', tr: '装修方案里包含三号厅。' },
+      { me: true, t: '我话唔好郁就唔好郁。', tr: '我说别动就别动。' },
+      { t: '收到。' }
+    ]
+  },
+
+  assistant: {
+    name: '助理',
+    tag: '',
+    avatar: '助',
+    time: '21:20',
+    preview: '收到',
+    status: '最後上線 21:25',
+    messages: [
+      { sys: '今天 08:40' },
+      { t: '何生，新加坡嘅合同核对完咗。', tr: '何生，新加坡的合同核对完了。' },
+      { t: '律师意见书附喺第三页。', tr: '律师意见书附在第三页。' },
+      { me: true, t: '嗯。' },
+      { t: '周五嘅机票订好咗。', tr: '周五的机票订好了。' },
+      { t: '下昼两点，滨海湾。', tr: '下午两点，滨海湾。' },
+      { me: true, t: '知道。' },
+      { t: '酒店要唔要一并订。', tr: '酒店要不要一并订。' },
+      { me: true, t: '唔使。', tr: '不用。' },
+      { t: '好。' },
+
+      { sys: '今天 14:00' },
+      { t: '何生，南华早报嘅邀约。', tr: '何生，南华早报的邀约。' },
+      { t: '公关部想确认你呢边意见。', tr: '公关部想确认你这边意见。' },
+      { me: true, t: '推咗。', tr: '推了。' },
+      { t: '好嘅。', tr: '好的。' },
+      { me: true, t: '以后呢啲直接推，唔使问。', tr: '以后这种直接推，不用问。' },
+      { t: '明白。' },
+
+      { sys: '今天 16:30' },
+      { t: '何生，下个月巴黎嘅行程初步排好咗。', tr: '何生，下个月巴黎的行程初步排好了。' },
+      { t: '10月12号出发，15号返嚟。', tr: '10月12号出发，15号回来。' },
+      { me: true, t: '中间留一日空。', tr: '中间留一天空。' },
+      { t: '边一日。', tr: '哪一天。' },
+      { me: true, t: '13号。', tr: '13号。' },
+      { t: '好嘅，我调整一下。', tr: '好的，我调整一下。' },
+      { me: true, t: '留畀我自己。', tr: '留给我自己。' },
+      { t: '明白。' },
+
+      { sys: '今天 21:20' },
+      { t: '何生，听日嘅行程send咗畀你。', tr: '何生，明天的行程发给你了。' },
+      { t: '朝早公司，中午同寰亚嗰边食饭，下昼去机场。', tr: '早上公司，中午和寰亚那边吃饭，下午去机场。' },
+      { me: true, t: '寰亚嗰个改期。', tr: '寰亚那个改期。' },
+      { t: '改到几时。', tr: '改到什么时候。' },
+      { me: true, t: '下个礼拜。', tr: '下周。' },
+      { t: '好嘅。', tr: '好的。' },
+      { me: true, t: '听日中午空出嚟。', tr: '明天中午空出来。' },
+      { t: '收到。' }
+    ]
+  }
+};
+
+function renderChatList(){
+  const order = ['jiang','wugai','brother2','brother1','sister','father','driver','manager','assistant'];
+  document.getElementById('chatlist').innerHTML = order.map(k => {
+    const c = chats[k];
+    return `
+      <div class="chatitem ${c.pinned ? 'pinned' : ''}" onclick="openChat('${k}')">
+        <div class="avatar ${c.gold ? 'gold' : ''}">${c.avatar}</div>
+        <div class="chatmain">
+          <div class="chatname">${c.name}${c.tag ? '<span class="tag">'+c.tag+'</span>' : ''}</div>
+          <div class="chatprev">${c.preview}</div>
+        </div>
+        <div class="chattime">${c.time}</div>
+      </div>`;
+  }).join('');
+}
+renderChatList();
+
+function openChat(key){
+  const c = chats[key];
+  document.getElementById('chatName').textContent = c.name;
+  document.getElementById('chatStatus').textContent = c.status || '';
+  renderChatBody(key);
+  go('chat');
+}
+
+function renderChatBody(key){
+  const c = chats[key];
+  const body = document.getElementById('chatBody');
+  body.innerHTML = c.messages.map(m => {
+    if(m.sys) return `<div class="sysmsg">${m.sys}</div>`;
+    const trHtml = m.tr ? ` <span class="tr">（${m.tr}）</span>` : '';
+    return `
+      <div class="msg ${m.me ? 'me' : ''}">
+        ${m.me ? '' : '<div class="msg-av">'+c.avatar+'</div>'}
+        <div class="bubble">${m.t}${trHtml}</div>
+      </div>`;
+  }).join('');
+  setTimeout(() => { body.scrollTop = body.scrollHeight; }, 60);
+}
+</script>
+</body>
+</html>
